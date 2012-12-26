@@ -15,7 +15,7 @@ import mpa.search.exhaustive.ExhaustiveSearch;
 import org.picocontainer.DefaultPicoContainer;
 import org.picocontainer.MutablePicoContainer;
 import org.picocontainer.behaviors.Caching;
-import org.picocontainer.parameters.ComponentParameter;
+import org.picocontainer.parameters.CollectionComponentParameter;
 
 public class CoreContainerFactory {
 
@@ -29,8 +29,10 @@ public class CoreContainerFactory {
 
         container.addComponent(PredefinedPairs.class);
 
-        container.addComponent(ScenaryEvaluator.class, CompoundScenaryEvaluator.class, 
-                new ComponentParameter(MostRecentPairEvaluator.class), new ComponentParameter(MeanEvaluator.class));
+        container.addComponent(MostRecentPairEvaluator.class);        
+        container.addComponent(MeanEvaluator.class);        
+        CollectionComponentParameter allEvaluators = new CollectionComponentParameter(ScenaryEvaluator.class, false);
+		container.addComponent(ScenaryEvaluator.class, CompoundScenaryEvaluator.class, allEvaluators);
         
         container.addComponent(ExhaustiveSearch.class);
         return container;
