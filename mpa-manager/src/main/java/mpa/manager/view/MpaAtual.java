@@ -112,15 +112,14 @@ public class MpaAtual extends JFrame {
 		btnSalva.setBounds(162, 419, 120, 23);
 		contentPane.add(btnSalva);
 		
-		
-		btnNovo = new JButton("Novo Mpa");
+		btnNovo = new JButton("Novo MPA");
 		btnNovo.setToolTipText("Cria um novo mpa com mesas.");
 		btnNovo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				abreTelaMpaNovo();
 			}
 		});
-		btnNovo.setBounds(341, 10, 93, 23);
+		btnNovo.setBounds(325, 10, 109, 23);
 		contentPane.add(btnNovo);
 		
 		mpas = new JComboBox();
@@ -130,7 +129,7 @@ public class MpaAtual extends JFrame {
 				preencheMesasComMpaSelecionado((MpaConfiguracao) mpas.getSelectedItem());
 			}
 		});
-		mpas.setBounds(10, 11, 321, 20);
+		mpas.setBounds(10, 11, 305, 20);
 		contentPane.add(mpas);
 		
 
