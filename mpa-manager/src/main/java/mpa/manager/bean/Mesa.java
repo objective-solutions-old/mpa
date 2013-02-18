@@ -57,7 +57,11 @@ public class Mesa implements Comparable<Mesa> {
 	
 	@Override
 	public String toString() {
-		return numero +	" - " + primeiroObjectiviano + (segundoObjectiviano != null ? " / " + segundoObjectiviano : "");
+		return numero +	" - " + getDevs();
+	}
+
+	public String getDevs() {
+		return primeiroObjectiviano + (segundoObjectiviano != null ? " / " + segundoObjectiviano : "");
 	}
 
 	public int compareTo(Mesa o) {

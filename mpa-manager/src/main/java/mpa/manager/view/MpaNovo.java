@@ -32,8 +32,8 @@ public class MpaNovo extends JFrame {
     private SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
     private JButton btnGerar;
     private JButton btnSalvar;
-
-    public MpaNovo(Date data) throws ParseException {
+    
+    public MpaNovo(Date data, String devs) throws ParseException {
         super();
         controller = new MpaControl();
 
@@ -47,6 +47,7 @@ public class MpaNovo extends JFrame {
         initializeButtons();
 
         taDuplas = new JTextArea();
+        taDuplas.setText(devs);
         taDuplas.setPreferredSize(new Dimension(450, 600));
         taDuplas.setBorder(BorderFactory.createEtchedBorder());
         contentPane.add(taDuplas, "cell 0 1 7 1,grow");

@@ -54,6 +54,15 @@ public class MpaControl {
 
         return mesas;
     }
+    
+    public String getDevs(MpaConfiguracao mpa) throws SQLException {
+    	String devs = "";
+    	if (mpa != null)
+    		for (Mesa mesa : getMesas(mpa))
+    			devs += mesa.getDevs() + "\n";
+    	
+    	return devs;
+    }
 
     public List<Objectiviano> getObjectivianos() {
         if (objectivianos == null) {
@@ -177,7 +186,7 @@ public class MpaControl {
         MesaRepository mesaRepository = MesaRepository.getInstance();
         mesaRepository.atualizaNumerosDeMesa(mesa);
     }
-
+    
     public String gerarNovoMpa() throws SQLException {
         
         MutablePicoContainer container = CoreContainerFactory.buildContainer();
