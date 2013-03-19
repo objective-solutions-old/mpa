@@ -83,7 +83,7 @@ public class MpaManager extends JFrame {
 		btnMpaNew.setToolTipText("Cria um novo mpa com mesas.");
 		btnMpaNew.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				abreTelaMpaNovo();
+				abreTelaMpaNovo(null);
 			}
 		});
 		
@@ -295,10 +295,6 @@ public class MpaManager extends JFrame {
 		listMesas.setSelectedValue(mesaSelecionada, false);
 	}
 	
-	private void abreTelaMpaNovo() {
-		abreTelaMpaNovo(null);
-	}
-	
 	private void abreTelaMpaNovo(String devs) {
 		try {
 			MpaNovo mpaNovo = new MpaNovo(controller.getMaiorMpa().getDataFim(), devs);
@@ -315,7 +311,10 @@ public class MpaManager extends JFrame {
 	}
 	
 	private void preencheMesasComMpaSelecionado(MpaConfiguracao mpa) {
-		if (mpa == null) return;
+		if (mpa == null) {
+			listMesas.setListData(new Object[] {});
+			return;
+		}
 		
 		boolean isPassado = mpa.getDataFim().before(new Date());
 		listMesas.setEnabled(!isPassado);

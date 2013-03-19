@@ -3,6 +3,8 @@ package mpa.manager.view;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -32,6 +34,7 @@ public class MpaNovo extends JFrame {
     private SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
     private JButton btnGerar;
     private JButton btnSalvar;
+    private JButton btnReordenar;
     
     public MpaNovo(Date data, String devs) throws ParseException {
         super();
@@ -40,33 +43,11 @@ public class MpaNovo extends JFrame {
         setTitle("Novo Mpa");
 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        contentPane = new JPanel(new MigLayout("", "[][][][grow][][]", "[][grow]"));
+        contentPane = new JPanel(new MigLayout("", "[][grow][]", "[][][grow]"));
         setContentPane(contentPane);
 
         initializeDateFields();
         initializeButtons();
-
-        taDuplas = new JTextArea();
-        taDuplas.setText(devs);
-        taDuplas.setPreferredSize(new Dimension(450, 600));
-        taDuplas.setBorder(BorderFactory.createEtchedBorder());
-        contentPane.add(taDuplas, "cell 0 1 7 1,grow");
-
-        pack();
-
-        inicializaData(data);
-    }
-
-    private void initializeButtons() {
-        btnGerar = new JButton("Gerar MPA");
-        btnGerar.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                new Thread() {
-                    public void run() { gerarNovoMpa(); };
-                }.start();
-            }
-        });
-        contentPane.add(btnGerar, "cell 5 0,alignx right");
         
         btnSalvar = new JButton("Salvar MPA");
         btnSalvar.addActionListener(new ActionListener() {
@@ -76,17 +57,50 @@ public class MpaNovo extends JFrame {
                 }.start();
             }
         });
-        contentPane.add(btnSalvar, "cell 6 0,alignx right,gapx push");
+        btnGerar = new JButton("Gerar MPA");
+        btnGerar.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                new Thread() {
+                    public void run() { gerarNovoMpa(); };
+                }.start();
+            }
+        });
+        
+        btnReordenar = new JButton("Reordenar MPA");
+        btnReordenar.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+                new Thread() {
+                    public void run() { reordenarMpa(); };
+                }.start();
+        	}
+        });
+        contentPane.add(btnReordenar, "cell 2 0,alignx right,aligny top");
+        contentPane.add(btnGerar, "cell 2 0,alignx right,aligny top");
+        contentPane.add(btnSalvar, "cell 2 0,alignx right,aligny top");
+        
+        JLabel label = new JLabel("Data Fim");
+        contentPane.add(label, "flowx,cell 0 1,alignx left,gapx 10");
+
+        taDuplas = new JTextArea();
+        taDuplas.setText(devs);
+        taDuplas.setPreferredSize(new Dimension(450, 600));
+        taDuplas.setBorder(BorderFactory.createEtchedBorder());
+        contentPane.add(taDuplas, "cell 0 2 3 1,grow");
+        tfDataInicio = new JFormattedTextField(new MaskFormatter("##/##/####"));
+        contentPane.add(tfDataInicio, "cell 0 0,shrinkx 0");
+        tfDataFim = new JFormattedTextField(new MaskFormatter("##/##/####"));
+        contentPane.add(tfDataFim, "cell 0 1,shrinkx 0");
+
+        pack();
+
+        inicializaData(data);
+    }
+
+    private void initializeButtons() {
     }
 
     private void initializeDateFields() throws ParseException {
-        contentPane.add(new JLabel("Data Início"), "cell 0 0");
-        tfDataInicio = new JFormattedTextField(new MaskFormatter("##/##/####"));
-        contentPane.add(tfDataInicio, "cell 1 0,shrinkx 0");
-
-        contentPane.add(new JLabel("Data Fim"), "cell 2 0,gapx 10");
-        tfDataFim = new JFormattedTextField(new MaskFormatter("##/##/####"));
-        contentPane.add(tfDataFim, "cell 3 0,shrinkx 0");
+        contentPane.add(new JLabel("Data Início"), "flowx,cell 0 0,alignx left");
     }
 
     private void inicializaData(Date data) {
@@ -111,6 +125,20 @@ public class MpaNovo extends JFrame {
             JOptionPane.showMessageDialog(this, e.toString());
         }
     }
+    
+    private void reordenarMpa() {
+    	setComponentsEnabled(false);
+		final MpaOrganizador mpaOrganizador = new MpaOrganizador(taDuplas.getText());
+		mpaOrganizador.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent e) {
+				setComponentsEnabled(true);
+				taDuplas.setText(mpaOrganizador.getMesasString());
+			}
+		});
+		
+		mpaOrganizador.setVisible(true);	
+    }
 
     private void gerarNovoMpa() {
         try {
@@ -128,6 +156,7 @@ public class MpaNovo extends JFrame {
         taDuplas.setEnabled(enabled);
         btnGerar.setEnabled(enabled);
         btnSalvar.setEnabled(enabled);
+        btnReordenar.setEnabled(enabled);
         tfDataFim.setEnabled(enabled);
         tfDataInicio.setEnabled(enabled);
     }
