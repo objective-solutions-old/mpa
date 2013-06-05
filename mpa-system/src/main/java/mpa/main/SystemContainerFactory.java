@@ -4,10 +4,10 @@ import mpa.mad.MadHomeImpl;
 import mpa.main.formatter.ScenaryFormatter;
 import mpa.main.formatter.SqlFormatter;
 import mpa.main.loader.ConfigFiles;
-import mpa.main.loader.ExpectedLoader;
+import mpa.main.loader.ExpectedLoaderFile;
 import mpa.main.loader.Loader;
 import mpa.main.loader.MpaLoader;
-import mpa.main.loader.TeamLoader;
+import mpa.main.loader.TeamLoaderFile;
 import mpa.pair.PairHomeImpl;
 import mpa.scenary.LastOcurrenceCache;
 import mpa.scenary.ScenaryHome;
@@ -33,9 +33,9 @@ public class SystemContainerFactory {
         container.addComponent(ScenaryHome.class, ScenaryHomeImpl.class);
         container.addComponent(ConfigFiles.class);
         
-        container.addComponent(TeamLoader.class);
+        container.addComponent(TeamLoaderFile.class);
         container.addComponent(MpaLoader.class);
-        container.addComponent(ExpectedLoader.class);
+        container.addComponent(ExpectedLoaderFile.class);
         container.addComponent(Loader.class);
 
         container.addComponent(PredefinedPairs.class);

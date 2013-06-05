@@ -14,8 +14,8 @@ import mpa.core.container.CoreContainerFactory;
 import mpa.mad.Mad;
 import mpa.mad.MadHome;
 import mpa.main.loader.ConfigFiles;
-import mpa.main.loader.ExpectedLoader;
-import mpa.main.loader.TeamLoader;
+import mpa.main.loader.ExpectedLoaderFile;
+import mpa.main.loader.TeamLoaderFile;
 import mpa.manager.Connector;
 import mpa.manager.bean.Mesa;
 import mpa.manager.bean.MpaConfiguracao;
@@ -194,11 +194,11 @@ public class MpaControl {
         
         container.addComponent(ConfigFiles.class);
         
-        container.addComponent(TeamLoader.class);
-        container.getComponent(TeamLoader.class).load();
+        container.addComponent(TeamLoaderFile.class);
+        container.getComponent(TeamLoaderFile.class).load();
         
-        container.addComponent(ExpectedLoader.class);
-        container.getComponent(ExpectedLoader.class).load();
+        container.addComponent(ExpectedLoaderFile.class);
+        container.getComponent(ExpectedLoaderFile.class).load();
         
         Scenary scenary = searcher.search();
         

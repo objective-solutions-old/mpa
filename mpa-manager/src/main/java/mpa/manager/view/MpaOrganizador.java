@@ -16,7 +16,6 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.TransferHandler;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.EtchedBorder;
 import javax.swing.table.DefaultTableModel;
 
 import net.miginfocom.swing.MigLayout;
