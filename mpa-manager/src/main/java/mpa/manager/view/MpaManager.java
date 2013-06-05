@@ -10,8 +10,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -20,7 +18,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
@@ -33,6 +30,7 @@ import mpa.manager.bean.Mesa;
 import mpa.manager.bean.MpaConfiguracao;
 import mpa.manager.bean.Objectiviano;
 import mpa.manager.control.MpaControl;
+import net.miginfocom.swing.MigLayout;
 
 
 public class MpaManager extends JFrame {
@@ -76,7 +74,8 @@ public class MpaManager extends JFrame {
 		
 		JPanel mpaPanel = new JPanel();
 		mpaPanel.setBorder(new TitledBorder(null, "Mpa", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		mpaPanel.setBounds(10, 0, 424, 82);
+		mpaPanel.setLayout(new MigLayout("", "[grow]", "[][grow]"));
+		mpaPanel.setBounds(10, 0, 424, 88);
 		contentPane.add(mpaPanel);
 		
 		btnMpaNew = new JButton("Novo MPA");
@@ -99,40 +98,20 @@ public class MpaManager extends JFrame {
 			}
 		});
 		
+		
 		cbMpas = new JComboBox();
 		cbMpas.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				preencheMesasComMpaSelecionado(getSelectedMpa());
 			}
 		});
-		
-		GroupLayout gl_mpaPanel = new GroupLayout(mpaPanel);
-		gl_mpaPanel.setHorizontalGroup(
-			gl_mpaPanel.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_mpaPanel.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(gl_mpaPanel.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_mpaPanel.createSequentialGroup()
-							.addComponent(btnMpaNew, GroupLayout.PREFERRED_SIZE, 103, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnMpaClone, GroupLayout.PREFERRED_SIZE, 107, GroupLayout.PREFERRED_SIZE))
-						.addComponent(cbMpas, 0, 412, Short.MAX_VALUE))
-					.addContainerGap())
-		);
-		gl_mpaPanel.setVerticalGroup(
-			gl_mpaPanel.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_mpaPanel.createSequentialGroup()
-					.addComponent(cbMpas, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addGroup(gl_mpaPanel.createParallelGroup(Alignment.BASELINE)
-						.addComponent(btnMpaNew)
-						.addComponent(btnMpaClone))
-					.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-		);
-		mpaPanel.setLayout(gl_mpaPanel);
+		mpaPanel.add(cbMpas, "cell 0 0,growx,aligny top");
+		mpaPanel.add(btnMpaNew, "flowx,cell 0 1,alignx left,aligny top");
+		mpaPanel.add(btnMpaClone, "cell 0 1,alignx left,aligny top");
 		
 		JPanel mesasPanel = new JPanel();
 		mesasPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Mesas do Mpa", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		mesasPanel.setLayout(new MigLayout("", "[grow]", "[grow]"));
 		mesasPanel.setBounds(10, 88, 424, 330);
 		contentPane.add(mesasPanel);
 		
@@ -146,31 +125,18 @@ public class MpaManager extends JFrame {
 		});
 		
 		scrollMesas = new JScrollPane(listMesas, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		GroupLayout gl_mesasPanel = new GroupLayout(mesasPanel);
-		gl_mesasPanel.setHorizontalGroup(
-			gl_mesasPanel.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_mesasPanel.createSequentialGroup()
-					.addContainerGap()
-					.addComponent(scrollMesas, GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE)
-					.addContainerGap())
-		);
-		gl_mesasPanel.setVerticalGroup(
-			gl_mesasPanel.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_mesasPanel.createSequentialGroup()
-					.addComponent(scrollMesas, GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
-					.addContainerGap())
-		);
-		mesasPanel.setLayout(gl_mesasPanel);
+		mesasPanel.add(scrollMesas, "cell 0 0,grow");
 		
 		JPanel mesaPanel = new JPanel();
 		mesaPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Mesa", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		mesaPanel.setLayout(new MigLayout("", "[grow]", "[][grow]"));
 		mesaPanel.setBounds(10, 415, 424, 82);
 		contentPane.add(mesaPanel);
 		
 		numMesa = new JTextField();
 		numMesa.setHorizontalAlignment(SwingConstants.CENTER);
 		numMesa.setEditable(false);
-		numMesa.setColumns(10);
+		numMesa.setColumns(2);
 		
 		cbDev1 = new JComboBox(controller.getObjectivianos().toArray());
 		cbDev1.setSelectedIndex(-1);
@@ -180,6 +146,9 @@ public class MpaManager extends JFrame {
 		obj.addAll(controller.getObjectivianos());
 		cbDev2 = new JComboBox(obj.toArray());
 		cbDev2.setSelectedIndex(-1);
+		mesaPanel.add(numMesa, "cell 0 0,aligny top");
+		mesaPanel.add(cbDev1, "cell 0 0,growx,aligny top");
+		mesaPanel.add(cbDev2, "cell 0 0,growx,aligny top");
 		
 		btnMesaNew = new JButton("Nova Mesa");
 		btnMesaNew.setEnabled(false);
@@ -189,6 +158,7 @@ public class MpaManager extends JFrame {
 				novaMesa();
 			}
 		});
+		mesaPanel.add(btnMesaNew, "flowx,cell 0 1,growx,aligny top");
 		
 		btnMesaSave = new JButton("Salva Mesa");
 		btnMesaSave.setToolTipText("Atualiza uma mesa, salvando mesas novas ou alteradas.");
@@ -205,6 +175,7 @@ public class MpaManager extends JFrame {
 				}
 			}
 		});
+		mesaPanel.add(btnMesaSave, "cell 0 1,growx,aligny top");
 		
 		btnMesaDelete = new JButton("Exclui Mesa");
 		btnMesaDelete.setToolTipText("Exclui uma mesa selecionada.");
@@ -221,44 +192,7 @@ public class MpaManager extends JFrame {
 				}
 			}
 		});
-		
-		GroupLayout gl_mesaPanel = new GroupLayout(mesaPanel);
-		gl_mesaPanel.setHorizontalGroup(
-			gl_mesaPanel.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_mesaPanel.createSequentialGroup()
-					.addGap(1)
-					.addGroup(gl_mesaPanel.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_mesaPanel.createSequentialGroup()
-							.addGap(10)
-							.addComponent(numMesa, GroupLayout.PREFERRED_SIZE, 23, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(cbDev1, GroupLayout.PREFERRED_SIZE, 173, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(cbDev2, GroupLayout.PREFERRED_SIZE, 186, GroupLayout.PREFERRED_SIZE))
-						.addGroup(gl_mesaPanel.createSequentialGroup()
-							.addGap(8)
-							.addComponent(btnMesaNew, GroupLayout.PREFERRED_SIZE, 122, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnMesaSave, GroupLayout.PREFERRED_SIZE, 134, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-							.addComponent(btnMesaDelete, GroupLayout.PREFERRED_SIZE, 126, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)))
-					.addGap(6))
-		);
-		gl_mesaPanel.setVerticalGroup(
-			gl_mesaPanel.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_mesaPanel.createSequentialGroup()
-					.addGroup(gl_mesaPanel.createParallelGroup(Alignment.BASELINE)
-						.addComponent(cbDev2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(cbDev1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(numMesa, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addGap(5)
-					.addGroup(gl_mesaPanel.createParallelGroup(Alignment.BASELINE)
-						.addComponent(btnMesaNew)
-						.addComponent(btnMesaSave)
-						.addComponent(btnMesaDelete)))
-		);
-		mesaPanel.setLayout(gl_mesaPanel);
+		mesaPanel.add(btnMesaDelete, "cell 0 1,growx,aligny top");
 		
 		refreshMpas();
 	}
