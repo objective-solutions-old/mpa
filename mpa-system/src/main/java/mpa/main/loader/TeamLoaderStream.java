@@ -27,6 +27,8 @@ public class TeamLoaderStream {
 	private void createTeam(String team) {
 		List<String> names = nextTeamNames(team);
 		String teamName = names.remove(0);
+		if (names.size()% 2 != 0)
+			names.add("Sozinho");
 		madHome.createTeam(teamName.trim(), names);
 	}
 

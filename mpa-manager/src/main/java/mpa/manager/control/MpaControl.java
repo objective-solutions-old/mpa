@@ -267,12 +267,22 @@ public class MpaControl {
     	String team = "";
     	StringBuilder builder = new StringBuilder();
         for(Pair pair: scenary.getPairs()) {
-        	String teamAtual = detectTeam(madHome.getTeams(), pair.getMads().first());
+        	
+        	Mad sozinho = madHome.getByName("Sozinho");
+        	
+			Mad dev1 = pair.getMads().first();
+        	Mad dev2 = pair.getMads().last();
+        	
+        	String teamAtual = detectTeam(madHome.getTeams(), dev1 != sozinho ? dev1 : dev2);
         	if (teamAtual != null && !team.equals(teamAtual)) {
 				team = teamAtual;
 				builder.append(team).append( ":\n");
 			}
-        	builder.append(pair).append("\n");
+        	
+        	if (!pair.getMads().contains(sozinho))
+        		builder.append(pair).append("\n");
+        	else
+        		for (Mad mad : pair.getMads()) if (mad != sozinho) builder.append(mad).append("\n"); 
         }
         return builder.toString();
     }

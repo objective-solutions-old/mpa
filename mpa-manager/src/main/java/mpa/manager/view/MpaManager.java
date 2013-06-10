@@ -123,16 +123,12 @@ public class MpaManager extends JFrame {
 		btnMpaGenerate = new JButton("Gerar");
 		btnMpaGenerate.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-                new Thread() {
-                    public void run() {
-                    	try {
-							gerarNovoMpa();
-						} catch (SQLException e) {
-							JOptionPane.showMessageDialog(MpaManager.this, e.toString());
-							e.printStackTrace();
-						}
-                    };
-                }.start();
+            	try {
+					gerarNovoMpa();
+				} catch (SQLException e1) {
+					JOptionPane.showMessageDialog(MpaManager.this, e1.toString());
+					e1.printStackTrace();
+				}
 			}
 		});
 		mpaPanel.add(btnMpaGenerate, "cell 0 1,growx,aligny top");
@@ -150,7 +146,7 @@ public class MpaManager extends JFrame {
 			}
 		});
 		
-		scrollMesas = new JScrollPane(listMesas, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		scrollMesas = new JScrollPane(listMesas, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		mesasPanel.add(scrollMesas, "cell 0 0,grow");
 		
 		JPanel mesaPanel = new JPanel(new MigLayout("", "[grow]", "[][][]"));
@@ -318,6 +314,7 @@ public class MpaManager extends JFrame {
 		cbDev2.setEnabled(true);
 		btnMesaSave.setEnabled(true);
 		btnMesaDelete.setEnabled(false);
+		textTeam.setEnabled(true);
 		
 		atribuiNumeroDaMesa();
 	}
@@ -358,12 +355,16 @@ public class MpaManager extends JFrame {
 			@Override
 			public void windowClosed(WindowEvent e) {
 				if (mpaGerar.getParams() != null)
-					try {
-						abreTelaMpaNovo(controller.gerarNovoMpa(mpaGerar.getParams()));
-					 } catch (Exception ex) {
-						 JOptionPane.showMessageDialog(MpaManager.this, ex.toString());
-						 ex.printStackTrace();
-					 }
+					new Thread() {
+					public void run() {
+						try {
+							abreTelaMpaNovo(controller.gerarNovoMpa(mpaGerar.getParams()));
+						} catch (Exception ex) {
+							JOptionPane.showMessageDialog(MpaManager.this, ex.toString());
+							ex.printStackTrace();
+						}						
+					};
+				}.start();
 			}
 		});
         
