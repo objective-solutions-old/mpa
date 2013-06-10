@@ -31,7 +31,12 @@ public class ExpectedLoaderStream implements ExpectedLoader{
 	}
 	
 	private void loadExpectedPairs() throws IOException {
-		for (String pair : configStream.getExpectedPairsStream().split("\n")) {
+		String streamPairs = configStream.getExpectedPairsStream();
+		if ("".equals(streamPairs))
+			return;
+		
+		for (String pair : streamPairs.split("\n")) {
+			
 			String operation = pair.substring(0,1);
 			
 			if ("+".equals(operation))

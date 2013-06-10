@@ -27,10 +27,10 @@ public class TeamLoaderStream {
 	private void createTeam(String team) {
 		List<String> names = nextTeamNames(team);
 		String teamName = names.remove(0);
-		madHome.createTeam(teamName, names);
+		madHome.createTeam(teamName.trim(), names);
 	}
 
 	private List<String> nextTeamNames(String team) {
-		return new LinkedList<String>(Arrays.asList(team.split(";")));
+		return new LinkedList<String>(Arrays.asList(team.split("/")));
 	}
 }
