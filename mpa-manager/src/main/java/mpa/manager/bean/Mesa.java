@@ -7,19 +7,22 @@ public class Mesa implements Comparable<Mesa> {
 	private int numero;
 	private Objectiviano primeiroObjectiviano;
 	private Objectiviano segundoObjectiviano;
+	private String time;
 
-	public Mesa(int numero, MpaConfiguracao mpa, Objectiviano primeiroObjectiviano, Objectiviano segundoObjectiviano) {
-		setMpa(mpa);
+	public Mesa(int numero, MpaConfiguracao mpa, Objectiviano primeiroObjectiviano, Objectiviano segundoObjectiviano, String time) {
 		if (numero < 1) throw new IllegalArgumentException("Número da mesa não pode ser menor que 1.");
-		this.numero = numero;
 		if (primeiroObjectiviano == null)
 			throw new IllegalArgumentException("Primeiro Objectiviano não pode ser nulo.");
+
+		this.mpa = mpa;
+		this.numero = numero;
 		setPrimeiroObjectiviano(primeiroObjectiviano);
 		setSegundoObjectiviano(segundoObjectiviano);
+		this.time = time;
 	}
 	
-	public Mesa(int id, int numero, MpaConfiguracao mpa, Objectiviano primeiroObjectiviano, Objectiviano segundoObjectiviano) {
-		this(numero, mpa, primeiroObjectiviano, segundoObjectiviano);
+	public Mesa(int id, int numero, MpaConfiguracao mpa, Objectiviano primeiroObjectiviano, Objectiviano segundoObjectiviano, String time) {
+		this(numero, mpa, primeiroObjectiviano, segundoObjectiviano, time);
 		this.id = id;
 	}
 
@@ -50,21 +53,27 @@ public class Mesa implements Comparable<Mesa> {
 	public MpaConfiguracao getMpa() {
 		return mpa;
 	}
-
-	public void setMpa(MpaConfiguracao mpa) {
-		this.mpa = mpa;
+	
+	public String getTime() {
+		return time;
 	}
 	
-	@Override
-	public String toString() {
-		return numero +	" - " + getDevs();
+	public void setTime(String time) {
+		this.time = time;	
 	}
 
-	public String getDevs() {
+	@Override
+	public String toString() {
+		return numero +	" - " + getDevsString();
+	}
+
+	public String getDevsString() {
 		return primeiroObjectiviano + (segundoObjectiviano != null ? " / " + segundoObjectiviano : "");
 	}
 
 	public int compareTo(Mesa o) {
 		return getNumero() > o.getNumero() ? 1 : -1;
 	}
+
+
 }

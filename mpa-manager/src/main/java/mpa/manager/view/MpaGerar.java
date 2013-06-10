@@ -22,7 +22,7 @@ public class MpaGerar extends JFrame {
 	private JTextArea textExpected;
 	private ConfigStream params;
 
-	public MpaGerar() {
+	public MpaGerar(String teams) {
 		setTitle("Parâmetros para gerar MPA");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 500, 450);
@@ -37,6 +37,7 @@ public class MpaGerar extends JFrame {
 		teamsPanel.setLayout(new MigLayout("", "[grow]", "[grow]"));
 		
 		textTeams = new JTextArea();
+		textTeams.setText(teams);
 		teamsPanel.add(textTeams, "cell 0 0,grow");
 		
 		JPanel panel = new JPanel();

@@ -31,6 +31,7 @@ import mpa.manager.bean.MpaConfiguracao;
 import mpa.manager.bean.Objectiviano;
 import mpa.manager.control.MpaControl;
 import net.miginfocom.swing.MigLayout;
+import javax.swing.JLabel;
 
 
 public class MpaManager extends JFrame {
@@ -50,14 +51,16 @@ public class MpaManager extends JFrame {
 	private JButton btnMesaDelete;
 	private JScrollPane scrollMesas;
 	private JButton btnMesaNew;
+	private JTextField textTeam;
+	private JLabel lblNmero;
+	private JLabel lblTime;
+	private JButton btnMpaGenerate;
 
 	public MpaManager() {
 		controller = new MpaControl();
-
-		setResizable(false);
 		setTitle("Mpa Manager");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 529);
+		setBounds(100, 100, 450, 475);
 		
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -67,32 +70,35 @@ public class MpaManager extends JFrame {
 		});
 		
 		
-		contentPane = new JPanel();
+		contentPane = new JPanel(new MigLayout("", "[grow]", "[][grow][]"));
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
-		contentPane.setLayout(null);
 		
-		JPanel mpaPanel = new JPanel();
+		JPanel mpaPanel = new JPanel(new MigLayout("", "[grow]", "[][grow]"));
 		mpaPanel.setBorder(new TitledBorder(null, "Mpa", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		mpaPanel.setLayout(new MigLayout("", "[grow]", "[][grow]"));
-		mpaPanel.setBounds(10, 0, 424, 88);
-		contentPane.add(mpaPanel);
+		contentPane.add(mpaPanel, "cell 0 0,grow");
 		
-		btnMpaNew = new JButton("Novo MPA");
+		btnMpaNew = new JButton("Novo");
 		btnMpaNew.setToolTipText("Cria um novo mpa com mesas.");
 		btnMpaNew.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				abreTelaMpaNovo(null);
+				try {
+					abreTelaMpaNovo(null);
+				} catch (ParseException e1) {
+					JOptionPane.showMessageDialog(MpaManager.this, e1.toString());
+					e1.printStackTrace();
+				}
 			}
 		});
 		
-		btnMpaClone = new JButton("Clonar MPA");
+		btnMpaClone = new JButton("Clonar");
 		btnMpaClone.setToolTipText("Cria um novo mpa com as mesas atuais.");
 		btnMpaClone.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					abreTelaMpaNovo(controller.getDevs(getSelectedMpa()));
-				} catch (SQLException e1) {
+					abreTelaMpaNovo(controller.getDevsStringFormatted(getSelectedMpa()));
+				} catch (Exception e1) {
+					JOptionPane.showMessageDialog(MpaManager.this, e1.toString());
 					e1.printStackTrace();
 				}
 			}
@@ -102,18 +108,38 @@ public class MpaManager extends JFrame {
 		cbMpas = new JComboBox();
 		cbMpas.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				preencheMesasComMpaSelecionado(getSelectedMpa());
+				try {
+					preencheMesasComMpaSelecionado(getSelectedMpa());
+				} catch (SQLException e1) {
+					JOptionPane.showMessageDialog(MpaManager.this, e1.toString());
+					e1.printStackTrace();
+				}
 			}
 		});
-		mpaPanel.add(cbMpas, "cell 0 0,growx,aligny top");
-		mpaPanel.add(btnMpaNew, "flowx,cell 0 1,alignx left,aligny top");
-		mpaPanel.add(btnMpaClone, "cell 0 1,alignx left,aligny top");
+		mpaPanel.add(cbMpas, "cell 0 0,growx,aligny center");
+		mpaPanel.add(btnMpaNew, "flowx,cell 0 1,growx,aligny top");
+		mpaPanel.add(btnMpaClone, "cell 0 1,growx,aligny top");
 		
-		JPanel mesasPanel = new JPanel();
+		btnMpaGenerate = new JButton("Gerar");
+		btnMpaGenerate.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+                new Thread() {
+                    public void run() {
+                    	try {
+							gerarNovoMpa();
+						} catch (SQLException e) {
+							JOptionPane.showMessageDialog(MpaManager.this, e.toString());
+							e.printStackTrace();
+						}
+                    };
+                }.start();
+			}
+		});
+		mpaPanel.add(btnMpaGenerate, "cell 0 1,growx,aligny top");
+		
+		JPanel mesasPanel = new JPanel(new MigLayout("", "[grow]", "[grow]"));
 		mesasPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Mesas do Mpa", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
-		mesasPanel.setLayout(new MigLayout("", "[grow]", "[grow]"));
-		mesasPanel.setBounds(10, 88, 424, 330);
-		contentPane.add(mesasPanel);
+		contentPane.add(mesasPanel, "cell 0 1,grow");
 		
 		listMesas = new JList();
 		listMesas.setBounds(5, 44, 418, 307);
@@ -127,28 +153,29 @@ public class MpaManager extends JFrame {
 		scrollMesas = new JScrollPane(listMesas, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		mesasPanel.add(scrollMesas, "cell 0 0,grow");
 		
-		JPanel mesaPanel = new JPanel();
+		JPanel mesaPanel = new JPanel(new MigLayout("", "[grow]", "[][][]"));
 		mesaPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Mesa", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
-		mesaPanel.setLayout(new MigLayout("", "[grow]", "[][grow]"));
-		mesaPanel.setBounds(10, 415, 424, 82);
-		contentPane.add(mesaPanel);
+		contentPane.add(mesaPanel, "cell 0 2,grow");
+		
+		lblNmero = new JLabel("Número:");
+		mesaPanel.add(lblNmero, "flowx,cell 0 0,alignx center,aligny center");
 		
 		numMesa = new JTextField();
 		numMesa.setHorizontalAlignment(SwingConstants.CENTER);
 		numMesa.setEditable(false);
 		numMesa.setColumns(2);
-		
+		mesaPanel.add(numMesa, "cell 0 0,alignx center,aligny center");
+
 		cbDev1 = new JComboBox(controller.getObjectivianos().toArray());
 		cbDev1.setSelectedIndex(-1);
+		mesaPanel.add(cbDev1, "cell 0 1,growx,aligny center");
 		
 		ArrayList<Objectiviano> obj = new ArrayList<Objectiviano>();
 		obj.add(null);
 		obj.addAll(controller.getObjectivianos());
 		cbDev2 = new JComboBox(obj.toArray());
 		cbDev2.setSelectedIndex(-1);
-		mesaPanel.add(numMesa, "cell 0 0,aligny top");
-		mesaPanel.add(cbDev1, "cell 0 0,growx,aligny top");
-		mesaPanel.add(cbDev2, "cell 0 0,growx,aligny top");
+		mesaPanel.add(cbDev2, "cell 0 1,growx,aligny center");
 		
 		btnMesaNew = new JButton("Nova Mesa");
 		btnMesaNew.setEnabled(false);
@@ -158,7 +185,7 @@ public class MpaManager extends JFrame {
 				novaMesa();
 			}
 		});
-		mesaPanel.add(btnMesaNew, "flowx,cell 0 1,growx,aligny top");
+		mesaPanel.add(btnMesaNew, "cell 0 2,growx,aligny top");
 		
 		btnMesaSave = new JButton("Salva Mesa");
 		btnMesaSave.setToolTipText("Atualiza uma mesa, salvando mesas novas ou alteradas.");
@@ -175,7 +202,7 @@ public class MpaManager extends JFrame {
 				}
 			}
 		});
-		mesaPanel.add(btnMesaSave, "cell 0 1,growx,aligny top");
+		mesaPanel.add(btnMesaSave, "cell 0 2,growx,aligny top");
 		
 		btnMesaDelete = new JButton("Exclui Mesa");
 		btnMesaDelete.setToolTipText("Exclui uma mesa selecionada.");
@@ -192,9 +219,21 @@ public class MpaManager extends JFrame {
 				}
 			}
 		});
-		mesaPanel.add(btnMesaDelete, "cell 0 1,growx,aligny top");
+		mesaPanel.add(btnMesaDelete, "cell 0 2,growx,aligny top");
 		
-		refreshMpas();
+		lblTime = new JLabel("Time:");
+		mesaPanel.add(lblTime, "cell 0 0,alignx center,aligny center");
+		
+		textTeam = new JTextField();
+		mesaPanel.add(textTeam, "cell 0 0,alignx center,aligny center");
+		textTeam.setColumns(10);
+		
+		try {
+			refreshMpas();
+		} catch (SQLException e1) {
+			JOptionPane.showMessageDialog(MpaManager.this, e1.toString());
+			e1.printStackTrace();
+		}
 	}
 	
 	private void preencheMpas() {
@@ -213,38 +252,42 @@ public class MpaManager extends JFrame {
 		numMesa.setText(String.valueOf(mesaSelecionada.getNumero()));
 		cbDev1.setSelectedItem(controller.objectivianoSelecionado(mesaSelecionada.getPrimeiroObjectiviano()));
 		cbDev2.setSelectedItem(controller.objectivianoSelecionado(mesaSelecionada.getSegundoObjectiviano()));
+		textTeam.setText(mesaSelecionada.getTime());
 	}
 	
 	private void limpaCamposMesa() {
 		numMesa.setText("");
 		cbDev1.setSelectedItem(null);
 		cbDev2.setSelectedItem(null);
+		textTeam.setText("");
 	}
 
 	private void updateMesaSelecionada() throws SQLException{
 		if (mesaSelecionada == null) return;
 		mesaSelecionada.setPrimeiroObjectiviano((Objectiviano)cbDev1.getSelectedItem());
 		mesaSelecionada.setSegundoObjectiviano((Objectiviano)cbDev2.getSelectedItem());
+		mesaSelecionada.setTime(textTeam.getText());
 		controller.updateMesa(mesaSelecionada);
 		listMesas.setSelectedValue(mesaSelecionada, false);
 	}
 	
-	private void abreTelaMpaNovo(String devs) {
-		try {
-			MpaNovo mpaNovo = new MpaNovo(controller.getMaiorMpa().getDataFim(), devs);
-			mpaNovo.addWindowListener(new WindowAdapter() {
-				@Override
-				public void windowClosed(WindowEvent e) {
+	private void abreTelaMpaNovo(String devs) throws ParseException {
+		MpaNovo mpaNovo = new MpaNovo(controller.getMaiorMpa().getDataFim(), devs);
+		mpaNovo.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent e) {
+				try {
 					refreshMpas();
+				} catch (SQLException e1) {
+					JOptionPane.showMessageDialog(MpaManager.this, e1.toString());
+					e1.printStackTrace();
 				}
-			});
-			mpaNovo.setVisible(true);	
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
+			}
+		});
+		mpaNovo.setVisible(true);	
 	}
 	
-	private void preencheMesasComMpaSelecionado(MpaConfiguracao mpa) {
+	private void preencheMesasComMpaSelecionado(MpaConfiguracao mpa) throws SQLException {
 		if (mpa == null) {
 			listMesas.setListData(new Object[] {});
 			return;
@@ -256,11 +299,7 @@ public class MpaManager extends JFrame {
 		
 		habilitaEdicaoDeMesas(false);
 		
-		try {
-			listMesas.setListData(controller.getMesas(mpa).toArray());
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+		listMesas.setListData(controller.getMesas(mpa).toArray());
 	}
 
 	private void habilitaEdicaoDeMesas(boolean b) {
@@ -268,6 +307,7 @@ public class MpaManager extends JFrame {
 		cbDev2.setEnabled(b);
 		btnMesaSave.setEnabled(b);
 		btnMesaDelete.setEnabled(b);
+		textTeam.setEnabled(b);
 	}
 	
 	private void novaMesa() {
@@ -291,11 +331,12 @@ public class MpaManager extends JFrame {
 		controller.criaMesa(getSelectedMpa(),
 				Integer.parseInt(numMesa.getText()),
 				(Objectiviano)cbDev1.getSelectedItem(),
-				(Objectiviano)cbDev2.getSelectedItem());
+				(Objectiviano)cbDev2.getSelectedItem(),
+				textTeam.getText());
 		preencheMesasComMpaSelecionado(getSelectedMpa());
 	}
 
-	private void refreshMpas() {
+	private void refreshMpas() throws SQLException {
 		preencheMpas();
 		cbMpas.setSelectedItem(controller.getMpaAtual());
 		preencheMesasComMpaSelecionado(controller.getMpaAtual());
@@ -303,12 +344,29 @@ public class MpaManager extends JFrame {
 	}
 	
 	private void excluiMesa() throws SQLException {
-		Mesa mesa = (Mesa)listMesas.getSelectedValue();
-		controller.excluiMesa(mesa);
-		controller.atualizaNumeroDasMesas(mesa);
+		controller.excluiMesa((Mesa)listMesas.getSelectedValue());
 	}
 
 	private MpaConfiguracao getSelectedMpa() {
 		return (MpaConfiguracao) cbMpas.getSelectedItem();
 	}
+	
+    private void gerarNovoMpa() throws SQLException {
+        final MpaGerar mpaGerar = new MpaGerar(controller.getDevsTeamSeparated(getSelectedMpa()));
+        
+        mpaGerar.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent e) {
+				if (mpaGerar.getParams() != null)
+					try {
+						abreTelaMpaNovo(controller.gerarNovoMpa(mpaGerar.getParams()));
+					 } catch (Exception ex) {
+						 JOptionPane.showMessageDialog(MpaManager.this, ex.toString());
+						 ex.printStackTrace();
+					 }
+			}
+		});
+        
+        mpaGerar.setVisible(true);
+    }
 }

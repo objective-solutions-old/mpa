@@ -27,6 +27,7 @@ public class MesaRepository extends Repository<Mesa> {
 
 		int idMesa = rs.getInt("id_mesa");
 		int numeroMesa = rs.getInt("numero");
+		String time = rs.getString("time");
 
 		int id_mpa = rs.getInt("id_mpa");
 		if (mpa == null || mpa.getId() != id_mpa) {
@@ -45,21 +46,13 @@ public class MesaRepository extends Repository<Mesa> {
 
 		return new Mesa(idMesa, numeroMesa, mpa,
 				new Objectiviano(idPrimeiroObjectiviano, primeiroNome, primeiroLogin),
-				segundoNome != null ? new Objectiviano(idSegundoObjectiviano, segundoNome, segundoLogin) : null);
+				segundoNome != null ? new Objectiviano(idSegundoObjectiviano, segundoNome, segundoLogin) : null,
+				time);
 	}
 
 	@Override
 	public String getSql() {
-		return "select mpa.id as id_mpa, mpa.data_inicio, mpa.data_fim,"
-				+ "    mesa.id as id_mesa, mesa.numero,"
-				+ "    des1.id as id_des1, des1.nome as primeiroNome, des1.login as primeiroLogin,"
-				+ "    des2.id as id_des2, des2.nome as segundoNome, des2.login as segundoLogin"
-				+ " from mpa_configuracao mpa"
-				+ " inner join mesa mesa on mesa.id_mpa_configuracao = mpa.id"
-				+ " inner join objectiviano des1 on des1.id = mesa.id_primeiro_objectiviano"
-				+ "  left outer join objectiviano des2 on des2.id = mesa.id_segundo_objectiviano"
-				+ " where mpa.data_inicio <= current_date"
-				+ "   and ((mpa.data_fim is null) or (mpa.data_fim >= current_date))";
+		return queryMesa("mpa.data_inicio <= current_date and ((mpa.data_fim is null) or (mpa.data_fim >= current_date))");
 	}
 
 	public static void createInstance(Connection connection) throws SQLException {
@@ -77,7 +70,7 @@ public class MesaRepository extends Repository<Mesa> {
 	public void update(Mesa mesa) throws SQLException {
 		if (mesa.getMpa().isPassado()) throw new IllegalStateException("Não é possível alterar mpas passados.");
 		
-		String update = "UPDATE MESA SET ID_PRIMEIRO_OBJECTIVIANO = ?, ID_SEGUNDO_OBJECTIVIANO = ? WHERE ID = ?";
+		String update = "UPDATE MESA SET ID_PRIMEIRO_OBJECTIVIANO = ?, ID_SEGUNDO_OBJECTIVIANO = ?, TIME = ? WHERE ID = ?";
 		
 		PreparedStatement statement = null;
 		try{
@@ -87,7 +80,9 @@ public class MesaRepository extends Repository<Mesa> {
 				statement.setInt(2,  mesa.getSegundoObjectiviano().getId());
 			else 
 				statement.setNull(2, Types.INTEGER);
-			statement.setInt(3, mesa.getId());
+			
+			statement.setString(3, mesa.getTime());
+			statement.setInt(4, mesa.getId());
 			statement.execute();
 		} finally {
 			statement.close();
@@ -99,7 +94,7 @@ public class MesaRepository extends Repository<Mesa> {
 		
 		PreparedStatement statement = null;
 		try {
-			String insert = "INSERT INTO MESA VALUES (NULL, ?, ?, ?, ?)";
+			String insert = "INSERT INTO MESA VALUES (NULL, ?, ?, ?, ?, ?)";
 			statement = connection.prepareStatement(insert);
 			statement.setInt(1, mesa.getMpa().getId());
 			statement.setInt(2, mesa.getNumero());
@@ -108,6 +103,8 @@ public class MesaRepository extends Repository<Mesa> {
 				statement.setInt(4,  mesa.getSegundoObjectiviano().getId());
 			else 
 				statement.setNull(4, Types.INTEGER);
+			
+			statement.setString(5, mesa.getTime());
 			statement.execute();
 		} catch (SQLException e) {
 			throw new IllegalStateException("Número de mesa já existente.");
@@ -115,17 +112,9 @@ public class MesaRepository extends Repository<Mesa> {
 			statement.close();
 		}
 	}
-
-	public List<Mesa> todos(MpaConfiguracao mpa) throws SQLException {
-		String select = "select mpa.id as id_mpa, mpa.data_inicio, mpa.data_fim,"
-				+ "    mesa.id as id_mesa, mesa.numero,"
-				+ "    des1.id as id_des1, des1.nome as primeiroNome, des1.login as primeiroLogin,"
-				+ "    des2.id as id_des2, des2.nome as segundoNome, des2.login as segundoLogin"
-				+ " from mpa_configuracao mpa"
-				+ " inner join mesa mesa on mesa.id_mpa_configuracao = mpa.id"
-				+ " inner join objectiviano des1 on des1.id = mesa.id_primeiro_objectiviano"
-				+ "  left outer join objectiviano des2 on des2.id = mesa.id_segundo_objectiviano"
-				+ " where mpa.id = ?";
+	
+	public List<Mesa> dadoMpa(MpaConfiguracao mpa) throws SQLException {
+		String select = queryMesa("mpa.id = ?");
 		
 		PreparedStatement statement = null; 
 		ResultSet rs = null;
@@ -144,32 +133,41 @@ public class MesaRepository extends Repository<Mesa> {
 	}
 
 	public void delete(Mesa mesa) throws SQLException {
-		String delete = "DELETE FROM MESA WHERE ID = ?";
+		String sql = "DELETE FROM MESA WHERE ID = ?";
 		
 		PreparedStatement statement = null;
 		try{
-			statement = connection.prepareStatement(delete);
+			statement = connection.prepareStatement(sql);
 			statement.setInt(1, mesa.getId());
 			statement.execute();
 		} finally {
 			statement.close();
 		}
-	}
-
-	public void atualizaNumerosDeMesa(Mesa mesa) throws SQLException {
-		String delete = "UPDATE MESA M " +
-						"SET M.NUMERO = M.NUMERO -1 " +
-						"WHERE M.ID_MPA_CONFIGURACAO = ? " +
-						"AND M.NUMERO > ?";
 		
-		PreparedStatement statement = null;
+		sql = "UPDATE MESA M " +
+				"SET M.NUMERO = M.NUMERO -1 " +
+				"WHERE M.ID_MPA_CONFIGURACAO = ? " +
+				"AND M.NUMERO > ?";
+
 		try{
-			statement = connection.prepareStatement(delete);
+			statement = connection.prepareStatement(sql);
 			statement.setInt(1, mesa.getMpa().getId());
 			statement.setInt(2, mesa.getNumero());
 			statement.executeUpdate();
 		} finally {
 			statement.close();
 		}
+	}
+
+	private String queryMesa(String where) {
+		return "select mpa.id as id_mpa, mpa.data_inicio, mpa.data_fim,"
+				+ "    mesa.id as id_mesa, mesa.numero, mesa.time,"
+				+ "    des1.id as id_des1, des1.nome as primeiroNome, des1.login as primeiroLogin,"
+				+ "    des2.id as id_des2, des2.nome as segundoNome, des2.login as segundoLogin"
+				+ " from mpa_configuracao mpa"
+				+ " inner join mesa mesa on mesa.id_mpa_configuracao = mpa.id"
+				+ " inner join objectiviano des1 on des1.id = mesa.id_primeiro_objectiviano"
+				+ "  left outer join objectiviano des2 on des2.id = mesa.id_segundo_objectiviano"
+				+ " where " + where;
 	}	
 }

@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 import mpa.core.container.CoreContainerFactory;
 import mpa.mad.Mad;
 import mpa.mad.MadHome;
+import mpa.mad.Team;
 import mpa.main.loader.ConfigStream;
 import mpa.main.loader.ExpectedLoaderStream;
 import mpa.main.loader.TeamLoaderStream;
@@ -49,17 +50,48 @@ public class MpaControl {
 
     public List<Mesa> getMesas(MpaConfiguracao mpa) throws SQLException {
         MesaRepository repository = MesaRepository.getInstance();
-        List<Mesa> mesas = repository.todos(mpa);
+        List<Mesa> mesas = repository.dadoMpa(mpa);
         Collections.sort(mesas);
 
         return mesas;
     }
     
-    public String getDevs(MpaConfiguracao mpa) throws SQLException {
+    public String getDevsStringFormatted(MpaConfiguracao mpa) throws SQLException {
     	String devs = "";
-    	if (mpa != null)
-    		for (Mesa mesa : getMesas(mpa))
-    			devs += mesa.getDevs() + "\n";
+    	
+    	if (mpa == null)
+    		return devs;
+    
+    	String team = "";
+		for (Mesa mesa : getMesas(mpa)) {
+			if (mesa.getTime() != null && !team.equals(mesa.getTime())) {
+				team = mesa.getTime();
+				devs += team + ":\n";
+			}
+			
+			devs += mesa.getDevsString() + "\n";
+		}
+		
+    	return devs;
+    }
+    
+    public String getDevsTeamSeparated(MpaConfiguracao mpa) throws SQLException {
+    	String devs = "";
+    	
+    	if (mpa == null)
+    		return devs;
+    	
+    	String time = "";
+    	for (Mesa mesa : getMesas(mpa)) {
+    		if (mesa.getTime() != null && !time.equals(mesa.getTime())) {
+    			time = mesa.getTime();
+    			if (!devs.equals(""))
+    				devs += "\n";
+    			devs += time ;
+    		}
+    		
+    		devs += " / " + mesa.getDevsString();
+    	}
     	
     	return devs;
     }
@@ -98,14 +130,17 @@ public class MpaControl {
     }
 
     private void validaDadosEntrada(String dadosMesas) throws SQLException {
-        for (String mesaString : quebraString("\n", dadosMesas)) {
+        for (String mesaString : dadosMesas.split("\n")) {
+        	if (mesaString.contains(":"))
+        		continue;
+        	
             Pattern pattern = Pattern.compile("\\w+( / \\w+)?");
             Matcher matcher = pattern.matcher(mesaString);
 
             if (!matcher.find())
                 throw new IllegalArgumentException("Formato inválido para mesa. (utilize: Dev1 / Dev2)");
 
-            String devsSeparados[] = quebraString(" / ", mesaString);
+            String devsSeparados[] = mesaString.split(" / ");
             ObjectivianoRepository devRepository = ObjectivianoRepository.getInstance();
 
             devRepository.getObjectiviano(devsSeparados[0]);
@@ -127,28 +162,30 @@ public class MpaControl {
         ObjectivianoRepository devRepository = ObjectivianoRepository.getInstance();
 
         int numeroMesa = 1;
-        for (String mesaString : quebraString("\n", mesasString)) {
-            String devsSeparados[] = quebraString(" / ", mesaString);
+        String time = "";
+        for (String streamLine : mesasString.split("\n")) {
+        	if (streamLine.contains(":")) {
+        		time = streamLine.substring(0, streamLine.length() -1);
+        		continue;
+        	}
+        	
+            String devs[] = streamLine.split(" / ");
 
-            Objectiviano primeiroObjectiviano = devRepository.getObjectiviano(devsSeparados[0].trim());
+            Objectiviano primeiroObjectiviano = devRepository.getObjectiviano(devs[0].trim());
             Objectiviano segundoObjectiviano = null;
 
-            if (devsSeparados.length != 1)
-                segundoObjectiviano = devRepository.getObjectiviano(devsSeparados[1].trim());
+            if (devs.length != 1)
+                segundoObjectiviano = devRepository.getObjectiviano(devs[1].trim());
 
-            criaMesa(mpa, numeroMesa++, primeiroObjectiviano, segundoObjectiviano);
+            criaMesa(mpa, numeroMesa++, primeiroObjectiviano, segundoObjectiviano, time);
         }
     }
 
     public void criaMesa(MpaConfiguracao mpa, int numero, Objectiviano primeiroObjectiviano,
-            Objectiviano segundoObjectiviano) throws SQLException {
+            Objectiviano segundoObjectiviano, String time) throws SQLException {
         MesaRepository mesaRepository = MesaRepository.getInstance();
-        Mesa mesa = new Mesa(numero, mpa, primeiroObjectiviano, segundoObjectiviano);
+        Mesa mesa = new Mesa(numero, mpa, primeiroObjectiviano, segundoObjectiviano, time);
         mesaRepository.insert(mesa);
-    }
-
-    private String[] quebraString(String separador, String entrada) {
-        return entrada.split(separador);
     }
 
     public List<MpaConfiguracao> getMpasDisponiveis() {
@@ -182,11 +219,6 @@ public class MpaControl {
         Connector.closeConnection();
     }
 
-    public void atualizaNumeroDasMesas(Mesa mesa) throws SQLException {
-        MesaRepository mesaRepository = MesaRepository.getInstance();
-        mesaRepository.atualizaNumerosDeMesa(mesa);
-    }
-    
     public String gerarNovoMpa(ConfigStream params) throws SQLException {
         
         MutablePicoContainer container = CoreContainerFactory.buildContainer();
@@ -202,10 +234,7 @@ public class MpaControl {
         
         Scenary scenary = searcher.search();
         
-        StringBuilder builder = new StringBuilder();
-        for(Pair p: scenary.getPairs())
-            builder.append(p).append("\n");    
-        return builder.toString();
+        return getDevsCalculated(container.getComponent(MadHome.class), scenary);
     }
 
     private ScenarySearch loadData(PicoContainer container) throws SQLException {
@@ -224,13 +253,35 @@ public class MpaControl {
         int c = 1;
         for(MpaConfiguracao mpa: mpas){
             Scenary scenary = scenaryHome.createScenary(c++, mpa.getDataInicio());
-            for(Mesa m: MesaRepository.getInstance().todos(mpa)) {
+            for(Mesa m: MesaRepository.getInstance().dadoMpa(mpa)) {
                 Mad mad1 = madHome.getByName(m.getPrimeiroObjectiviano().getNome());
                 Mad mad2 = m.getSegundoObjectiviano() == null ? sozinho : madHome.getByName(m.getSegundoObjectiviano().getNome());
                 scenary.addPair(pairHome.createPair(mad1, mad2));
             }
         }
+        reverse(mpas);
         return searcher;
+    }
+    
+    private String getDevsCalculated(MadHome madHome, Scenary scenary) throws SQLException {
+    	String team = "";
+    	StringBuilder builder = new StringBuilder();
+        for(Pair pair: scenary.getPairs()) {
+        	String teamAtual = detectTeam(madHome.getTeams(), pair.getMads().first());
+        	if (teamAtual != null && !team.equals(teamAtual)) {
+				team = teamAtual;
+				builder.append(team).append( ":\n");
+			}
+        	builder.append(pair).append("\n");
+        }
+        return builder.toString();
+    }
+    
+    private String detectTeam(List<Team> teams, Mad dev) {
+    	for (Team team : teams)
+    		if (team.getMads().contains(dev))
+    			return team.getName();
+    	return null;
     }
 
 }
