@@ -141,15 +141,24 @@ public class MpaNovo extends JFrame {
     }
 
     private void gerarNovoMpa() {
-        try {
-            setComponentsEnabled(false);
-            taDuplas.setText(controller.gerarNovoMpa());
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, e.toString());
-        } finally {
-            setComponentsEnabled(true);
-        }
+        setComponentsEnabled(false);
+        final MpaGerar mpaGerar = new MpaGerar();
+        
+        mpaGerar.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent e) {
+				setComponentsEnabled(true);
+				try {
+					setComponentsEnabled(true);
+					if (mpaGerar.getParams() != null) taDuplas.setText(controller.gerarNovoMpa(mpaGerar.getParams()));
+				 } catch (Exception ex) {
+					 ex.printStackTrace();
+					 JOptionPane.showMessageDialog(MpaNovo.this, ex.toString());
+				 }
+			}
+		});
+        
+        mpaGerar.setVisible(true);
     }
 
     private void setComponentsEnabled(boolean enabled) {

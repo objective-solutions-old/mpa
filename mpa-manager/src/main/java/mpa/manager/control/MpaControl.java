@@ -13,9 +13,9 @@ import java.util.regex.Pattern;
 import mpa.core.container.CoreContainerFactory;
 import mpa.mad.Mad;
 import mpa.mad.MadHome;
-import mpa.main.loader.ConfigFiles;
-import mpa.main.loader.ExpectedLoaderFile;
-import mpa.main.loader.TeamLoaderFile;
+import mpa.main.loader.ConfigStream;
+import mpa.main.loader.ExpectedLoaderStream;
+import mpa.main.loader.TeamLoaderStream;
 import mpa.manager.Connector;
 import mpa.manager.bean.Mesa;
 import mpa.manager.bean.MpaConfiguracao;
@@ -187,18 +187,18 @@ public class MpaControl {
         mesaRepository.atualizaNumerosDeMesa(mesa);
     }
     
-    public String gerarNovoMpa() throws SQLException {
+    public String gerarNovoMpa(ConfigStream params) throws SQLException {
         
         MutablePicoContainer container = CoreContainerFactory.buildContainer();
         ScenarySearch searcher = loadData(container);
         
-        container.addComponent(ConfigFiles.class);
+        container.addComponent(params);
         
-        container.addComponent(TeamLoaderFile.class);
-        container.getComponent(TeamLoaderFile.class).load();
+        container.addComponent(TeamLoaderStream.class);
+        container.getComponent(TeamLoaderStream.class).load();
         
-        container.addComponent(ExpectedLoaderFile.class);
-        container.getComponent(ExpectedLoaderFile.class).load();
+        container.addComponent(ExpectedLoaderStream.class);
+        container.getComponent(ExpectedLoaderStream.class).load();
         
         Scenary scenary = searcher.search();
         
