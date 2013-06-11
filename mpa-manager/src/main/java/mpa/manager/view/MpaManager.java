@@ -217,7 +217,7 @@ public class MpaManager extends JFrame {
 		});
 		mesaPanel.add(btnMesaDelete, "cell 0 2,growx,aligny top");
 		
-		lblTime = new JLabel("Time:");
+		lblTime = new JLabel("Equipe:");
 		mesaPanel.add(lblTime, "cell 0 0,alignx center,aligny center");
 		
 		textTeam = new JTextField();
@@ -248,7 +248,7 @@ public class MpaManager extends JFrame {
 		numMesa.setText(String.valueOf(mesaSelecionada.getNumero()));
 		cbDev1.setSelectedItem(controller.objectivianoSelecionado(mesaSelecionada.getPrimeiroObjectiviano()));
 		cbDev2.setSelectedItem(controller.objectivianoSelecionado(mesaSelecionada.getSegundoObjectiviano()));
-		textTeam.setText(mesaSelecionada.getTime());
+		textTeam.setText(mesaSelecionada.getEquipe());
 	}
 	
 	private void limpaCamposMesa() {
@@ -262,7 +262,7 @@ public class MpaManager extends JFrame {
 		if (mesaSelecionada == null) return;
 		mesaSelecionada.setPrimeiroObjectiviano((Objectiviano)cbDev1.getSelectedItem());
 		mesaSelecionada.setSegundoObjectiviano((Objectiviano)cbDev2.getSelectedItem());
-		mesaSelecionada.setTime(textTeam.getText());
+		mesaSelecionada.setEquipe(textTeam.getText());
 		controller.updateMesa(mesaSelecionada);
 		listMesas.setSelectedValue(mesaSelecionada, false);
 	}

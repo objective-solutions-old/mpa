@@ -7,9 +7,9 @@ public class Mesa implements Comparable<Mesa> {
 	private int numero;
 	private Objectiviano primeiroObjectiviano;
 	private Objectiviano segundoObjectiviano;
-	private String time;
+	private String equipe;
 
-	public Mesa(int numero, MpaConfiguracao mpa, Objectiviano primeiroObjectiviano, Objectiviano segundoObjectiviano, String time) {
+	public Mesa(int numero, MpaConfiguracao mpa, Objectiviano primeiroObjectiviano, Objectiviano segundoObjectiviano, String equipe) {
 		if (numero < 1) throw new IllegalArgumentException("Número da mesa não pode ser menor que 1.");
 		if (primeiroObjectiviano == null)
 			throw new IllegalArgumentException("Primeiro Objectiviano não pode ser nulo.");
@@ -18,7 +18,7 @@ public class Mesa implements Comparable<Mesa> {
 		this.numero = numero;
 		setPrimeiroObjectiviano(primeiroObjectiviano);
 		setSegundoObjectiviano(segundoObjectiviano);
-		this.time = time;
+		this.equipe = equipe;
 	}
 	
 	public Mesa(int id, int numero, MpaConfiguracao mpa, Objectiviano primeiroObjectiviano, Objectiviano segundoObjectiviano, String time) {
@@ -54,12 +54,12 @@ public class Mesa implements Comparable<Mesa> {
 		return mpa;
 	}
 	
-	public String getTime() {
-		return time;
+	public String getEquipe() {
+		return equipe;
 	}
 	
-	public void setTime(String time) {
-		this.time = time;	
+	public void setEquipe(String equipe) {
+		this.equipe = equipe;	
 	}
 
 	@Override

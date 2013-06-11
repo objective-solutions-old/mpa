@@ -64,8 +64,8 @@ public class MpaControl {
     
     	String team = "";
 		for (Mesa mesa : getMesas(mpa)) {
-			if (mesa.getTime() != null && !team.equals(mesa.getTime())) {
-				team = mesa.getTime();
+			if (mesa.getEquipe() != null && !team.equals(mesa.getEquipe())) {
+				team = mesa.getEquipe();
 				devs += team + ":\n";
 			}
 			
@@ -81,13 +81,13 @@ public class MpaControl {
     	if (mpa == null)
     		return devs;
     	
-    	String time = "";
+    	String equipe = "";
     	for (Mesa mesa : getMesas(mpa)) {
-    		if (mesa.getTime() != null && !time.equals(mesa.getTime())) {
-    			time = mesa.getTime();
+    		if (mesa.getEquipe() != null && !equipe.equals(mesa.getEquipe())) {
+    			equipe = mesa.getEquipe();
     			if (!devs.equals(""))
     				devs += "\n";
-    			devs += time ;
+    			devs += equipe ;
     		}
     		
     		devs += " / " + mesa.getDevsString();
@@ -162,10 +162,10 @@ public class MpaControl {
         ObjectivianoRepository devRepository = ObjectivianoRepository.getInstance();
 
         int numeroMesa = 1;
-        String time = "";
+        String equipe = "";
         for (String streamLine : mesasString.split("\n")) {
         	if (streamLine.contains(":")) {
-        		time = streamLine.substring(0, streamLine.length() -1);
+        		equipe = streamLine.substring(0, streamLine.length() -1);
         		continue;
         	}
         	
@@ -177,14 +177,14 @@ public class MpaControl {
             if (devs.length != 1)
                 segundoObjectiviano = devRepository.getObjectiviano(devs[1].trim());
 
-            criaMesa(mpa, numeroMesa++, primeiroObjectiviano, segundoObjectiviano, time);
+            criaMesa(mpa, numeroMesa++, primeiroObjectiviano, segundoObjectiviano, equipe);
         }
     }
 
     public void criaMesa(MpaConfiguracao mpa, int numero, Objectiviano primeiroObjectiviano,
-            Objectiviano segundoObjectiviano, String time) throws SQLException {
+            Objectiviano segundoObjectiviano, String equipe) throws SQLException {
         MesaRepository mesaRepository = MesaRepository.getInstance();
-        Mesa mesa = new Mesa(numero, mpa, primeiroObjectiviano, segundoObjectiviano, time);
+        Mesa mesa = new Mesa(numero, mpa, primeiroObjectiviano, segundoObjectiviano, equipe);
         mesaRepository.insert(mesa);
     }
 

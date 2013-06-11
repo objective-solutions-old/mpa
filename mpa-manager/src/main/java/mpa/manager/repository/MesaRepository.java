@@ -27,7 +27,7 @@ public class MesaRepository extends Repository<Mesa> {
 
 		int idMesa = rs.getInt("id_mesa");
 		int numeroMesa = rs.getInt("numero");
-		String time = rs.getString("time");
+		String time = rs.getString("equipe");
 
 		int id_mpa = rs.getInt("id_mpa");
 		if (mpa == null || mpa.getId() != id_mpa) {
@@ -70,7 +70,7 @@ public class MesaRepository extends Repository<Mesa> {
 	public void update(Mesa mesa) throws SQLException {
 		if (mesa.getMpa().isPassado()) throw new IllegalStateException("Não é possível alterar mpas passados.");
 		
-		String update = "UPDATE MESA SET ID_PRIMEIRO_OBJECTIVIANO = ?, ID_SEGUNDO_OBJECTIVIANO = ?, TIME = ? WHERE ID = ?";
+		String update = "UPDATE MESA SET ID_PRIMEIRO_OBJECTIVIANO = ?, ID_SEGUNDO_OBJECTIVIANO = ?, EQUIPE = ? WHERE ID = ?";
 		
 		PreparedStatement statement = null;
 		try{
@@ -81,7 +81,7 @@ public class MesaRepository extends Repository<Mesa> {
 			else 
 				statement.setNull(2, Types.INTEGER);
 			
-			statement.setString(3, mesa.getTime());
+			statement.setString(3, mesa.getEquipe());
 			statement.setInt(4, mesa.getId());
 			statement.execute();
 		} finally {
@@ -104,7 +104,7 @@ public class MesaRepository extends Repository<Mesa> {
 			else 
 				statement.setNull(4, Types.INTEGER);
 			
-			statement.setString(5, mesa.getTime());
+			statement.setString(5, mesa.getEquipe());
 			statement.execute();
 		} catch (SQLException e) {
 			throw new IllegalStateException("Número de mesa já existente.");
@@ -161,7 +161,7 @@ public class MesaRepository extends Repository<Mesa> {
 
 	private String queryMesa(String where) {
 		return "select mpa.id as id_mpa, mpa.data_inicio, mpa.data_fim,"
-				+ "    mesa.id as id_mesa, mesa.numero, mesa.time,"
+				+ "    mesa.id as id_mesa, mesa.numero, mesa.equipe,"
 				+ "    des1.id as id_des1, des1.nome as primeiroNome, des1.login as primeiroLogin,"
 				+ "    des2.id as id_des2, des2.nome as segundoNome, des2.login as segundoLogin"
 				+ " from mpa_configuracao mpa"

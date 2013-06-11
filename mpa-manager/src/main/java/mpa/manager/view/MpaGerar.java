@@ -33,7 +33,7 @@ public class MpaGerar extends JFrame {
 		contentPane.setLayout(new MigLayout("", "[grow]", "[grow][grow][]"));
 		
 		JPanel teamsPanel = new JPanel();
-		teamsPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Devs: (time / dev1 / dev2...)", TitledBorder.LEFT, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		teamsPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Devs: (equipe / dev1 / dev2...)", TitledBorder.LEFT, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		contentPane.add(teamsPanel, "cell 0 0,grow");
 		teamsPanel.setLayout(new MigLayout("", "[grow]", "[grow]"));
 		
