@@ -6,6 +6,7 @@ import static java.util.Collections.sort;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -76,24 +77,25 @@ public class MpaControl {
     }
     
     public String getDevsTeamSeparated(MpaConfiguracao mpa) throws SQLException {
-    	String devs = "";
-    	
     	if (mpa == null)
-    		return devs;
+    		return "";
     	
-    	String equipe = "";
+    	HashMap<String, String> equipes = new HashMap<String, String>();
+    	
     	for (Mesa mesa : getMesas(mpa)) {
-    		if (mesa.getEquipe() != null && !equipe.equals(mesa.getEquipe())) {
-    			equipe = mesa.getEquipe();
-    			if (!devs.equals(""))
-    				devs += "\n";
-    			devs += equipe ;
-    		}
+    		String devs = "";
+    		if (equipes.containsKey(mesa.getEquipe()))
+    			devs = equipes.remove(mesa.getEquipe());
     		
-    		devs += " / " + mesa.getDevsString();
+    		equipes.put(mesa.getEquipe(), !"".equals(devs) ? devs + " / " + mesa.getDevsString() : mesa.getDevsString());
+    	}
+
+    	StringBuilder builder = new StringBuilder();
+    	for (String equipe : equipes.keySet()) {
+    		builder.append(equipe).append(" / ").append(equipes.get(equipe)).append("\n");
     	}
     	
-    	return devs;
+    	return builder.toString();
     }
 
     public List<Objectiviano> getObjectivianos() {
@@ -266,9 +268,9 @@ public class MpaControl {
     private String getDevsCalculated(MadHome madHome, Scenary scenary) throws SQLException {
     	String team = "";
     	StringBuilder builder = new StringBuilder();
-        for(Pair pair: scenary.getPairs()) {
-        	
-        	Mad sozinho = madHome.getByName("Sozinho");
+    	Mad sozinho = madHome.getByName("Sozinho");
+       
+    	for(Pair pair: scenary.getPairs()) {
         	
 			Mad dev1 = pair.getMads().first();
         	Mad dev2 = pair.getMads().last();
@@ -293,5 +295,4 @@ public class MpaControl {
     			return team.getName();
     	return null;
     }
-
 }
