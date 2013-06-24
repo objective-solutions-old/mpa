@@ -73,6 +73,10 @@ public class MpaControl {
 		return mesasDoTeam;
     }
     
+    private Mesa getMaiorMesa(MpaConfiguracao mpa) throws SQLException {
+    	return Collections.max(getMesas(mpa));
+    }
+    
     public String getDevsTeamSeparated(MpaConfiguracao mpa, String selectedTeam, String separator) throws SQLException {
     	if (mpa == null)
     		return "";
@@ -118,14 +122,15 @@ public class MpaControl {
         return null;
     }
 
-    public void criaMpaComMesas(Date dataInicio, Date dataFim, String dadosMesas) {
-        try {
+    public void criaMpaComMesas(Date dataInicio, Date dataFim, String dadosMesas) throws SQLException {
             validaDadosEntrada(dadosMesas);
             MpaConfiguracao mpaConfiguracao = criaMpaConfiguracao(dataInicio, dataFim);
-            criaMesas(mpaConfiguracao, dadosMesas);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+            criaMesas(mpaConfiguracao, 1, dadosMesas);
+    }
+
+    public void atualizaMpaComMesas(MpaConfiguracao mpa, String dadosMesas) throws SQLException {
+    		validaDadosEntrada(dadosMesas);
+    		criaMesas(mpa, getMaiorMesa(mpa).getNumero() + 1, dadosMesas);
     }
 
     private void validaDadosEntrada(String dadosMesas) throws SQLException {
@@ -156,11 +161,11 @@ public class MpaControl {
         return mpaConfiguracao;
     }
 
-    private void criaMesas(MpaConfiguracao mpa, String mesasString) throws SQLException {
+    private void criaMesas(MpaConfiguracao mpa, int numeroMesaInicial, String mesasString) throws SQLException {
 
         ObjectivianoRepository devRepository = ObjectivianoRepository.getInstance();
 
-        int numeroMesa = 1;
+        int numeroMesa = numeroMesaInicial;
         String equipe = "";
         for (String streamLine : mesasString.split("\n")) {
         	if (streamLine.contains(":")) {
@@ -197,7 +202,7 @@ public class MpaControl {
         
         return mpas;
     }
-
+    
     public MpaConfiguracao getMpaAtual() {
         for (MpaConfiguracao mpa : mpaConfiguracoes)
             if (mpa.isAtual())
@@ -207,6 +212,15 @@ public class MpaControl {
 
     public MpaConfiguracao getMaiorMpa() {
         return mpaConfiguracoes.get(0);
+    }
+    
+    public List<MpaConfiguracao> getMpasEditaveis() {
+    	List<MpaConfiguracao> editaveis = new ArrayList<MpaConfiguracao>();
+    	for (MpaConfiguracao mpa : mpaConfiguracoes)
+    		if (!mpa.isPassado())
+    			editaveis.add(mpa);
+    	
+    	return editaveis;
     }
 
     public void excluiMesa(Mesa mesa) throws SQLException {

@@ -72,6 +72,8 @@ public class Mesa implements Comparable<Mesa> {
 	}
 
 	public int compareTo(Mesa o) {
+		if (getNumero() == o.getNumero())
+			return 0;
 		return getNumero() > o.getNumero() ? 1 : -1;
 	}
 

@@ -17,8 +17,11 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.text.MaskFormatter;
 
+import mpa.manager.bean.MpaConfiguracao;
 import mpa.manager.control.MpaControl;
 import net.miginfocom.swing.MigLayout;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 
 public class MpaNovo extends JFrame {
 
@@ -30,6 +33,10 @@ public class MpaNovo extends JFrame {
     private MpaControl controller;
     private SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
     private JButton btnSalvar;
+    private JCheckBox chkAtualizar;
+    private JComboBox cbMpaOrigem;
+    private JLabel lblInicio;
+    private JLabel lblFim;
     
     public MpaNovo(Date data, String devs) throws ParseException {
         super();
@@ -38,23 +45,39 @@ public class MpaNovo extends JFrame {
         setTitle("Novo Mpa");
 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        contentPane = new JPanel(new MigLayout("", "[grow]", "[][grow]"));
-        setBounds(100, 100, 400, 450);
+        contentPane = new JPanel(new MigLayout("", "[grow]", "[][grow][]"));
+        setBounds(100, 100, 460, 500);
         setContentPane(contentPane);
         
-        JLabel lblInicio = new JLabel("Início:");
-        contentPane.add(lblInicio, "flowx,cell 0 0,alignx center,aligny center");
+        chkAtualizar = new JCheckBox("Atualizar");
+        chkAtualizar.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		refreshTipoGeracao();
+        	}
+        });
+        contentPane.add(chkAtualizar, "flowx,cell 0 0,alignx center,aligny center");
+        
+        cbMpaOrigem = new JComboBox();
+        contentPane.add(cbMpaOrigem, "cell 0 0,alignx center,aligny center");
+        
+        lblInicio = new JLabel("Início:");
+        contentPane.add(lblInicio, "cell 0 0,alignx center,aligny center");
         
         tfDataInicio = new JFormattedTextField(new MaskFormatter("##/##/####"));
         contentPane.add(tfDataInicio, "cell 0 0,shrinkx 0,alignx center,aligny center");
         
-        JLabel lblFim = new JLabel("Fim:");
+        lblFim = new JLabel("Fim:");
         contentPane.add(lblFim, "cell 0 0,alignx center,gapx 10,aligny center");
         
         tfDataFim = new JFormattedTextField(new MaskFormatter("##/##/####"));
         contentPane.add(tfDataFim, "cell 0 0,shrinkx 0,alignx center,aligny center");
         
-        btnSalvar = new JButton("Salvar MPA");
+        taDuplas = new JTextArea();
+        taDuplas.setText(devs);
+        taDuplas.setBorder(BorderFactory.createEtchedBorder());
+        contentPane.add(taDuplas, "cell 0 1,grow");
+        
+        btnSalvar = new JButton("Salvar");
         btnSalvar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 new Thread() {
@@ -62,17 +85,21 @@ public class MpaNovo extends JFrame {
                 }.start();
             }
         });
-        contentPane.add(btnSalvar, "cell 0 0,alignx center,aligny center");
-
-        taDuplas = new JTextArea();
-        taDuplas.setText(devs);
-        taDuplas.setBorder(BorderFactory.createEtchedBorder());
-        contentPane.add(taDuplas, "cell 0 1 ,grow");
+        contentPane.add(btnSalvar, "cell 0 2,alignx right,aligny center");
 
         inicializaData(data);
+        preencheMpasOrigem();
+        refreshTipoGeracao();
     }
 
-    private void inicializaData(Date data) {
+	private void refreshTipoGeracao() {
+		boolean atualizar = chkAtualizar.isSelected();
+		tfDataInicio.setEnabled(!atualizar);
+		tfDataFim.setEnabled(!atualizar);
+		cbMpaOrigem.setEnabled(atualizar);
+	}
+
+	private void inicializaData(Date data) {
         Calendar c = Calendar.getInstance();
         c.setTime(data);
         c.add(Calendar.DATE, 1);
@@ -80,12 +107,20 @@ public class MpaNovo extends JFrame {
         c.add(Calendar.DATE, 6);
         tfDataFim.setText(format.format(c.getTime()));
     }
+	
+	private void preencheMpasOrigem() {
+		cbMpaOrigem.removeAllItems();
+		for (MpaConfiguracao mpaConf : controller.getMpasEditaveis())
+			cbMpaOrigem.addItem(mpaConf);
+	}
 
     private void salvarMpa() {
-        try {
-            Date dataInicio = format.parse(tfDataInicio.getText());
-            Date dataFim = format.parse(tfDataFim.getText());
-            controller.criaMpaComMesas(dataInicio, dataFim, taDuplas.getText());
+    	try {
+        	if (chkAtualizar.isSelected())
+        		controller.atualizaMpaComMesas((MpaConfiguracao) cbMpaOrigem.getSelectedItem(), taDuplas.getText());
+        	else
+	            controller.criaMpaComMesas(format.parse(tfDataInicio.getText()), format.parse(tfDataFim.getText()), taDuplas.getText());
+	            
             dispose();
         } catch (ParseException e) {
             JOptionPane.showMessageDialog(this, "Formato de data inválido");
