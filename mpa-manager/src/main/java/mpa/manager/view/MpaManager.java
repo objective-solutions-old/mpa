@@ -13,6 +13,7 @@ import java.util.Date;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -31,7 +32,6 @@ import mpa.manager.bean.MpaConfiguracao;
 import mpa.manager.bean.Objectiviano;
 import mpa.manager.control.MpaControl;
 import net.miginfocom.swing.MigLayout;
-import javax.swing.JLabel;
 
 
 public class MpaManager extends JFrame {
@@ -46,7 +46,6 @@ public class MpaManager extends JFrame {
 	private Mesa mesaSelecionada;
 	private JComboBox cbMpas;
 	private JButton btnMesaSave;
-	private JButton btnMpaNew;
 	private JButton btnMpaClone;
 	private JButton btnMesaDelete;
 	private JScrollPane scrollMesas;
@@ -55,12 +54,14 @@ public class MpaManager extends JFrame {
 	private JLabel lblNmero;
 	private JLabel lblTime;
 	private JButton btnMpaGenerate;
+	private JComboBox cbTeam;
+	private JLabel lblEquipe;
 
 	public MpaManager() {
 		controller = new MpaControl();
 		setTitle("Mpa Manager");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 475);
+		setBounds(100, 100, 450, 550);
 		
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -78,38 +79,12 @@ public class MpaManager extends JFrame {
 		mpaPanel.setBorder(new TitledBorder(null, "Mpa", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		contentPane.add(mpaPanel, "cell 0 0,grow");
 		
-		btnMpaNew = new JButton("Novo");
-		btnMpaNew.setToolTipText("Cria um novo mpa com mesas.");
-		btnMpaNew.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				try {
-					abreTelaMpaNovo(null);
-				} catch (ParseException e1) {
-					JOptionPane.showMessageDialog(MpaManager.this, e1.toString());
-					e1.printStackTrace();
-				}
-			}
-		});
-		
-		btnMpaClone = new JButton("Clonar");
-		btnMpaClone.setToolTipText("Cria um novo mpa com as mesas atuais.");
-		btnMpaClone.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				try {
-					abreTelaMpaNovo(controller.getDevsStringFormatted(getSelectedMpa()));
-				} catch (Exception e1) {
-					JOptionPane.showMessageDialog(MpaManager.this, e1.toString());
-					e1.printStackTrace();
-				}
-			}
-		});
-		
 		
 		cbMpas = new JComboBox();
 		cbMpas.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					preencheMesasComMpaSelecionado(getSelectedMpa());
+					preencheMesasComMpaSelecionado();
 				} catch (SQLException e1) {
 					JOptionPane.showMessageDialog(MpaManager.this, e1.toString());
 					e1.printStackTrace();
@@ -117,7 +92,26 @@ public class MpaManager extends JFrame {
 			}
 		});
 		mpaPanel.add(cbMpas, "cell 0 0,growx,aligny center");
-		mpaPanel.add(btnMpaNew, "flowx,cell 0 1,growx,aligny top");
+		
+		lblEquipe = new JLabel("Equipe:");
+		mpaPanel.add(lblEquipe, "flowx,cell 0 1");
+		
+		cbTeam = new JComboBox();
+		mpaPanel.add(cbTeam, "cell 0 1,growx");
+		
+		btnMpaClone = new JButton("Clonar");
+		btnMpaClone.setToolTipText("Cria um novo mpa com as mesas atuais.");
+		btnMpaClone.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					
+					abreTelaMpaNovo(controller.getDevsTeamSeparated(getSelectedMpa(), getSelectedTeam(), "\n"));
+				} catch (Exception e1) {
+					JOptionPane.showMessageDialog(MpaManager.this, e1.toString());
+					e1.printStackTrace();
+				}
+			}
+		});
 		mpaPanel.add(btnMpaClone, "cell 0 1,growx,aligny top");
 		
 		btnMpaGenerate = new JButton("Gerar");
@@ -209,7 +203,7 @@ public class MpaManager extends JFrame {
 				
 				try {
 					excluiMesa();
-					preencheMesasComMpaSelecionado(getSelectedMpa());
+					preencheMesasComMpaSelecionado();
 				} catch (SQLException e1) {
 					e1.printStackTrace();
 				}
@@ -283,19 +277,21 @@ public class MpaManager extends JFrame {
 		mpaNovo.setVisible(true);	
 	}
 	
-	private void preencheMesasComMpaSelecionado(MpaConfiguracao mpa) throws SQLException {
-		if (mpa == null) {
+	private void preencheMesasComMpaSelecionado() throws SQLException {
+		if (getSelectedMpa() == null) {
 			listMesas.setListData(new Object[] {});
 			return;
 		}
 		
-		boolean isPassado = mpa.getDataFim().before(new Date());
+		boolean isPassado = getSelectedMpa().getDataFim().before(new Date());
 		listMesas.setEnabled(!isPassado);
 		btnMesaNew.setEnabled(!isPassado);
 		
 		habilitaEdicaoDeMesas(false);
 		
-		listMesas.setListData(controller.getMesas(mpa).toArray());
+		listMesas.setListData(controller.getMesas(getSelectedMpa()).toArray());
+		
+		refreshTeams();
 	}
 
 	private void habilitaEdicaoDeMesas(boolean b) {
@@ -330,16 +326,24 @@ public class MpaManager extends JFrame {
 				(Objectiviano)cbDev1.getSelectedItem(),
 				(Objectiviano)cbDev2.getSelectedItem(),
 				textTeam.getText());
-		preencheMesasComMpaSelecionado(getSelectedMpa());
+		preencheMesasComMpaSelecionado();
 	}
 
 	private void refreshMpas() throws SQLException {
 		preencheMpas();
 		cbMpas.setSelectedItem(controller.getMpaAtual());
-		preencheMesasComMpaSelecionado(controller.getMpaAtual());
+		preencheMesasComMpaSelecionado();
 		habilitaEdicaoDeMesas(false);
 	}
 	
+	private void refreshTeams() throws SQLException {
+		cbTeam.removeAllItems();
+		cbTeam.addItem("Todas");
+		for (String team : controller.getTeams(getSelectedMpa()))
+			if (team != null)
+				cbTeam.addItem(team);
+	}
+
 	private void excluiMesa() throws SQLException {
 		controller.excluiMesa((Mesa)listMesas.getSelectedValue());
 	}
@@ -347,9 +351,13 @@ public class MpaManager extends JFrame {
 	private MpaConfiguracao getSelectedMpa() {
 		return (MpaConfiguracao) cbMpas.getSelectedItem();
 	}
+
+	private String getSelectedTeam() {
+		return "Todas".equals((String) cbTeam.getSelectedItem()) ? null : (String) cbTeam.getSelectedItem();
+	}
 	
     private void gerarNovoMpa() throws SQLException {
-        final MpaGerar mpaGerar = new MpaGerar(controller.getDevsTeamSeparated(getSelectedMpa()));
+        final MpaGerar mpaGerar = new MpaGerar(controller.getDevsTeamSeparated(getSelectedMpa(), getSelectedTeam(), " / "));
         
         mpaGerar.addWindowListener(new WindowAdapter() {
 			@Override

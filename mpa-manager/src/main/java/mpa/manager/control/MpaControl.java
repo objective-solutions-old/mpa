@@ -4,10 +4,13 @@ import static java.util.Collections.reverse;
 import static java.util.Collections.sort;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,51 +51,45 @@ public class MpaControl {
             e.printStackTrace();
         }
     }
-
+    
     public List<Mesa> getMesas(MpaConfiguracao mpa) throws SQLException {
+    	return getMesas(mpa, null);
+    }
+
+    public List<Mesa> getMesas(MpaConfiguracao mpa, String team) throws SQLException {    	
         MesaRepository repository = MesaRepository.getInstance();
         List<Mesa> mesas = repository.dadoMpa(mpa);
         Collections.sort(mesas);
 
-        return mesas;
-    }
-    
-    public String getDevsStringFormatted(MpaConfiguracao mpa) throws SQLException {
-    	String devs = "";
-    	
-    	if (mpa == null)
-    		return devs;
-    
-    	String team = "";
-		for (Mesa mesa : getMesas(mpa)) {
-			if (mesa.getEquipe() != null && !team.equals(mesa.getEquipe())) {
-				team = mesa.getEquipe();
-				devs += team + ":\n";
-			}
-			
-			devs += mesa.getDevsString() + "\n";
+        if (team == null)
+        	return mesas;
+        
+		List<Mesa> mesasDoTeam = new ArrayList<Mesa>();
+		for (Mesa mesa : mesas) {
+			if (team.equals(mesa.getEquipe()))
+				mesasDoTeam.add(mesa);
 		}
 		
-    	return devs;
+		return mesasDoTeam;
     }
     
-    public String getDevsTeamSeparated(MpaConfiguracao mpa) throws SQLException {
+    public String getDevsTeamSeparated(MpaConfiguracao mpa, String selectedTeam, String separator) throws SQLException {
     	if (mpa == null)
     		return "";
     	
     	HashMap<String, String> equipes = new HashMap<String, String>();
     	
-    	for (Mesa mesa : getMesas(mpa)) {
+    	for (Mesa mesa : getMesas(mpa, selectedTeam)) {
     		String devs = "";
     		if (equipes.containsKey(mesa.getEquipe()))
     			devs = equipes.remove(mesa.getEquipe());
     		
-    		equipes.put(mesa.getEquipe(), !"".equals(devs) ? devs + " / " + mesa.getDevsString() : mesa.getDevsString());
+    		equipes.put(mesa.getEquipe(), !"".equals(devs) ? devs + separator + mesa.getDevsString() : mesa.getDevsString());
     	}
 
     	StringBuilder builder = new StringBuilder();
     	for (String equipe : equipes.keySet()) {
-    		builder.append(equipe).append(" / ").append(equipes.get(equipe)).append("\n");
+    		builder.append(equipe).append("\n".equals(separator) ? ":" + separator : separator).append(equipes.get(equipe)).append("\n");
     	}
     	
     	return builder.toString();
@@ -295,4 +292,14 @@ public class MpaControl {
     			return team.getName();
     	return null;
     }
+
+	public Set<String> getTeams(MpaConfiguracao mpa) throws SQLException {
+		List<Mesa> mesas = getMesas(mpa);
+		Set<String> equipes = new HashSet<String>();
+		for (Mesa mesa : mesas) {			
+			equipes.add(mesa.getEquipe());
+		}
+		
+		return equipes;
+	}
 }
