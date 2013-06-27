@@ -33,7 +33,7 @@ public class MpaNovo extends JFrame {
     private MpaControl controller;
     private SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
     private JButton btnSalvar;
-    private JCheckBox chkAtualizar;
+    private JCheckBox chkAdicionar;
     private JComboBox cbMpaOrigem;
     private JLabel lblInicio;
     private JLabel lblFim;
@@ -49,13 +49,13 @@ public class MpaNovo extends JFrame {
         setBounds(100, 100, 460, 500);
         setContentPane(contentPane);
         
-        chkAtualizar = new JCheckBox("Atualizar");
-        chkAtualizar.addActionListener(new ActionListener() {
+        chkAdicionar = new JCheckBox("Adicionar a:");
+        chkAdicionar.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
         		refreshTipoGeracao();
         	}
         });
-        contentPane.add(chkAtualizar, "flowx,cell 0 0,alignx center,aligny center");
+        contentPane.add(chkAdicionar, "flowx,cell 0 0,alignx center,aligny center");
         
         cbMpaOrigem = new JComboBox();
         contentPane.add(cbMpaOrigem, "cell 0 0,alignx center,aligny center");
@@ -93,7 +93,7 @@ public class MpaNovo extends JFrame {
     }
 
 	private void refreshTipoGeracao() {
-		boolean atualizar = chkAtualizar.isSelected();
+		boolean atualizar = chkAdicionar.isSelected();
 		tfDataInicio.setEnabled(!atualizar);
 		tfDataFim.setEnabled(!atualizar);
 		cbMpaOrigem.setEnabled(atualizar);
@@ -116,7 +116,7 @@ public class MpaNovo extends JFrame {
 
     private void salvarMpa() {
     	try {
-        	if (chkAtualizar.isSelected())
+        	if (chkAdicionar.isSelected())
         		controller.atualizaMpaComMesas((MpaConfiguracao) cbMpaOrigem.getSelectedItem(), taDuplas.getText());
         	else
 	            controller.criaMpaComMesas(format.parse(tfDataInicio.getText()), format.parse(tfDataFim.getText()), taDuplas.getText());
