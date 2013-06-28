@@ -61,7 +61,7 @@ public class MpaManager extends JFrame {
 		controller = new MpaControl();
 		setTitle("Mpa Manager");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 550);
+		setBounds(100, 100, 350, 580);
 		
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -71,13 +71,13 @@ public class MpaManager extends JFrame {
 		});
 		
 		
-		contentPane = new JPanel(new MigLayout("", "[grow]", "[][grow][]"));
+		contentPane = new JPanel(new MigLayout("", "[grow]", "[][][grow][]"));
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		
-		JPanel mpaPanel = new JPanel(new MigLayout("", "[grow]", "[][grow]"));
+		JPanel mpaPanel = new JPanel(new MigLayout("", "[grow]", "[]"));
 		mpaPanel.setBorder(new TitledBorder(null, "Mpa", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		contentPane.add(mpaPanel, "cell 0 0,grow");
+		contentPane.add(mpaPanel, "cell 0 0,growx");
 		
 		
 		cbMpas = new JComboBox();
@@ -93,14 +93,32 @@ public class MpaManager extends JFrame {
 		});
 		mpaPanel.add(cbMpas, "cell 0 0,growx,aligny center");
 		
+		JPanel operacoesPanel = new JPanel(new MigLayout("", "[grow]", "[]"));
+		operacoesPanel.setBorder(new TitledBorder(null, "Opera\u00E7\u00F5es", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		contentPane.add(operacoesPanel, "cell 0 1,growx");
+		
 		lblEquipe = new JLabel("Equipe:");
-		mpaPanel.add(lblEquipe, "flowx,cell 0 1");
+		operacoesPanel.add(lblEquipe, "flowx,cell 0 0,aligny center");
 		
 		cbTeam = new JComboBox();
-		mpaPanel.add(cbTeam, "cell 0 1,growx");
+		operacoesPanel.add(cbTeam, "cell 0 0,growx,aligny center");
 		
 		btnMpaClone = new JButton("Clonar");
+		operacoesPanel.add(btnMpaClone, "cell 0 0,growx,aligny center");
 		btnMpaClone.setToolTipText("Cria um novo mpa com as mesas atuais.");
+		
+		btnMpaGenerate = new JButton("Gerar");
+		operacoesPanel.add(btnMpaGenerate, "cell 0 0,growx,aligny center");
+		btnMpaGenerate.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+            	try {
+					gerarNovoMpa();
+				} catch (SQLException e1) {
+					JOptionPane.showMessageDialog(MpaManager.this, e1.toString());
+					e1.printStackTrace();
+				}
+			}
+		});
 		btnMpaClone.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
@@ -112,24 +130,10 @@ public class MpaManager extends JFrame {
 				}
 			}
 		});
-		mpaPanel.add(btnMpaClone, "cell 0 1,growx,aligny top");
-		
-		btnMpaGenerate = new JButton("Gerar");
-		btnMpaGenerate.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-            	try {
-					gerarNovoMpa();
-				} catch (SQLException e1) {
-					JOptionPane.showMessageDialog(MpaManager.this, e1.toString());
-					e1.printStackTrace();
-				}
-			}
-		});
-		mpaPanel.add(btnMpaGenerate, "cell 0 1,growx,aligny top");
 		
 		JPanel mesasPanel = new JPanel(new MigLayout("", "[grow]", "[grow]"));
 		mesasPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Mesas do Mpa", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
-		contentPane.add(mesasPanel, "cell 0 1,grow");
+		contentPane.add(mesasPanel, "cell 0 2,grow");
 		
 		listMesas = new JList();
 		listMesas.setBounds(5, 44, 418, 307);
@@ -145,7 +149,7 @@ public class MpaManager extends JFrame {
 		
 		JPanel mesaPanel = new JPanel(new MigLayout("", "[grow]", "[][][]"));
 		mesaPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Mesa", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
-		contentPane.add(mesaPanel, "cell 0 2,grow");
+		contentPane.add(mesaPanel, "cell 0 3,growx");
 		
 		lblNmero = new JLabel("Número:");
 		mesaPanel.add(lblNmero, "flowx,cell 0 0,alignx center,aligny center");
