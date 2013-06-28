@@ -142,7 +142,7 @@ public class MpaControl {
             Matcher matcher = pattern.matcher(mesaString);
 
             if (!matcher.find())
-                throw new IllegalArgumentException("Formato inválido para mesa. (utilize: Dev1 / Dev2)");
+                throw new RuntimeException("Formato inválido para mesa. (utilize: Dev1 / Dev2)");
 
             String devsSeparados[] = mesaString.split(" / ");
             ObjectivianoRepository devRepository = ObjectivianoRepository.getInstance();

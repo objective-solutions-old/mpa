@@ -65,6 +65,9 @@ public class MpaConfiguracaoRepository extends Repository<MpaConfiguracao> {
 	}
 
 	private void validaMpa(MpaConfiguracao mpa) throws SQLException {
+		if (mpa.getDataFim().before(new java.util.Date()))
+			throw new RuntimeException("Não é possível criar um Mpa com vigência passada.");
+		
 		String select = "SELECT COUNT(*) FROM MPA_CONFIGURACAO WHERE DATA_FIM >= ?";
 
 		PreparedStatement statement = null;
@@ -75,7 +78,7 @@ public class MpaConfiguracaoRepository extends Repository<MpaConfiguracao> {
 			rs = statement.executeQuery();
 			rs.next();
 			if (rs.getInt(1) != 0)
-				throw new IllegalStateException("Já existe um Mpa cobrindo esta faixa de datas.");
+				throw new RuntimeException("Já existe um Mpa cobrindo esta faixa de datas.");
 		} finally {
 			rs.close();
 			statement.close();

@@ -6,6 +6,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -46,7 +47,7 @@ public class MpaNovo extends JFrame {
 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         contentPane = new JPanel(new MigLayout("", "[grow]", "[][grow][]"));
-        setBounds(100, 100, 460, 500);
+        setBounds(100, 100, 480, 500);
         setContentPane(contentPane);
         
         chkAdicionar = new JCheckBox("Adicionar a:");
@@ -110,8 +111,13 @@ public class MpaNovo extends JFrame {
 	
 	private void preencheMpasOrigem() {
 		cbMpaOrigem.removeAllItems();
-		for (MpaConfiguracao mpaConf : controller.getMpasEditaveis())
+		List<MpaConfiguracao> mpas = controller.getMpasEditaveis();
+		
+		for (MpaConfiguracao mpaConf : mpas)
 			cbMpaOrigem.addItem(mpaConf);
+		
+		if (mpas.isEmpty())
+			chkAdicionar.setEnabled(false);
 	}
 
     private void salvarMpa() {
@@ -123,7 +129,7 @@ public class MpaNovo extends JFrame {
 	            
             dispose();
         } catch (ParseException e) {
-            JOptionPane.showMessageDialog(this, "Formato de data inválido");
+            JOptionPane.showMessageDialog(this, "Formato de data inválido (Utilize: dd/mm/aaaa)");
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, e.toString());
