@@ -9,20 +9,21 @@ import java.util.Date;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextArea;
 import javax.swing.text.MaskFormatter;
 
 import mpa.manager.bean.MpaConfiguracao;
 import mpa.manager.control.MpaControl;
 import net.miginfocom.swing.MigLayout;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 
 public class MpaNovo extends JFrame {
 
@@ -34,10 +35,11 @@ public class MpaNovo extends JFrame {
     private MpaControl controller;
     private SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
     private JButton btnSalvar;
-    private JCheckBox chkAdicionar;
     private JComboBox cbMpaOrigem;
     private JLabel lblInicio;
     private JLabel lblFim;
+    private JRadioButton rdbtnNovoMpa;
+    private JRadioButton rdbtnAdicionarEm;
     
     public MpaNovo(Date data, String devs) throws ParseException {
         super();
@@ -46,20 +48,22 @@ public class MpaNovo extends JFrame {
         setTitle("Novo Mpa");
 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        contentPane = new JPanel(new MigLayout("", "[grow]", "[][grow][]"));
-        setBounds(100, 100, 480, 500);
+        contentPane = new JPanel(new MigLayout("", "[grow]", "[][][grow][]"));
+        setBounds(100, 100, 350, 500);
         setContentPane(contentPane);
+                
+        rdbtnNovoMpa = new JRadioButton("Novo Mpa");
+        rdbtnNovoMpa.addActionListener(new RefreshRadio());
+        rdbtnNovoMpa.setSelected(true);
+        contentPane.add(rdbtnNovoMpa, "flowx,cell 0 0,growx,aligny center");
+
+        rdbtnAdicionarEm = new JRadioButton("Adicionar em");
+        rdbtnAdicionarEm.addActionListener(new RefreshRadio());
+        contentPane.add(rdbtnAdicionarEm, "flowx,cell 0 1,growx,aligny center");
         
-        chkAdicionar = new JCheckBox("Adicionar a:");
-        chkAdicionar.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		refreshTipoGeracao();
-        	}
-        });
-        contentPane.add(chkAdicionar, "flowx,cell 0 0,alignx center,aligny center");
-        
-        cbMpaOrigem = new JComboBox();
-        contentPane.add(cbMpaOrigem, "cell 0 0,alignx center,aligny center");
+        ButtonGroup rdbGroup = new ButtonGroup();
+        rdbGroup.add(rdbtnNovoMpa);
+        rdbGroup.add(rdbtnAdicionarEm);
         
         lblInicio = new JLabel("Início:");
         contentPane.add(lblInicio, "cell 0 0,alignx center,aligny center");
@@ -73,32 +77,70 @@ public class MpaNovo extends JFrame {
         tfDataFim = new JFormattedTextField(new MaskFormatter("##/##/####"));
         contentPane.add(tfDataFim, "cell 0 0,shrinkx 0,alignx center,aligny center");
         
+        
         taDuplas = new JTextArea();
         taDuplas.setText(devs);
         taDuplas.setBorder(BorderFactory.createEtchedBorder());
-        contentPane.add(taDuplas, "cell 0 1,grow");
+        contentPane.add(taDuplas, "cell 0 2,grow");
         
         btnSalvar = new JButton("Salvar");
-        btnSalvar.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                new Thread() {
-                    public void run() { salvarMpa(); };
-                }.start();
-            }
-        });
-        contentPane.add(btnSalvar, "cell 0 2,alignx right,aligny center");
+        btnSalvar.addActionListener(new MpaSave());
+        contentPane.add(btnSalvar, "cell 0 3,alignx right,aligny center");
+        
+        cbMpaOrigem = new JComboBox();
+        contentPane.add(cbMpaOrigem, "cell 0 1,alignx center,aligny center");
 
         inicializaData(data);
         preencheMpasOrigem();
-        refreshTipoGeracao();
+        new RefreshRadio().actionPerformed(null);
     }
 
-	private void refreshTipoGeracao() {
-		boolean atualizar = chkAdicionar.isSelected();
-		tfDataInicio.setEnabled(!atualizar);
-		tfDataFim.setEnabled(!atualizar);
-		cbMpaOrigem.setEnabled(atualizar);
-	}
+    private class RefreshRadio implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			boolean novo = rdbtnNovoMpa.isSelected();
+			lblInicio.setEnabled(novo);
+			tfDataInicio.setEnabled(novo);
+			lblFim.setEnabled(novo);
+			tfDataFim.setEnabled(novo);
+			cbMpaOrigem.setEnabled(!novo);
+		}
+    }
+    
+    private class MpaSave implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			enablementItens(false);
+	    	try {
+	        	if (rdbtnNovoMpa.isSelected())
+	        		controller.criaMpaComMesas(format.parse(tfDataInicio.getText()), format.parse(tfDataFim.getText()), taDuplas.getText());
+	        	else
+	        		controller.atualizaMpaComMesas((MpaConfiguracao) cbMpaOrigem.getSelectedItem(), taDuplas.getText());
+		            
+	            dispose();
+	        } catch (ParseException e1) {
+	            JOptionPane.showMessageDialog(MpaNovo.this, "Formato de data inválido (Utilize: dd/mm/aaaa)");
+	        } catch (Exception e1) {
+	            e1.printStackTrace();
+	            JOptionPane.showMessageDialog(MpaNovo.this, e1.toString());
+	        } finally {
+	        	enablementItens(true);
+	        	new RefreshRadio().actionPerformed(null);
+	        }
+		}
+		
+		private void enablementItens(boolean enable) {
+			rdbtnNovoMpa.setEnabled(enable);
+			rdbtnAdicionarEm.setEnabled(enable);
+			lblInicio.setEnabled(enable);
+			tfDataInicio.setEnabled(enable);
+			lblFim.setEnabled(enable);
+			tfDataFim.setEnabled(enable);
+			cbMpaOrigem.setEnabled(enable);
+		    taDuplas.setEnabled(enable);
+		    btnSalvar.setEnabled(enable);
+		}
+    }
 
 	private void inicializaData(Date data) {
         Calendar c = Calendar.getInstance();
@@ -117,22 +159,6 @@ public class MpaNovo extends JFrame {
 			cbMpaOrigem.addItem(mpaConf);
 		
 		if (mpas.isEmpty())
-			chkAdicionar.setEnabled(false);
-	}
-
-    private void salvarMpa() {
-    	try {
-        	if (chkAdicionar.isSelected())
-        		controller.atualizaMpaComMesas((MpaConfiguracao) cbMpaOrigem.getSelectedItem(), taDuplas.getText());
-        	else
-	            controller.criaMpaComMesas(format.parse(tfDataInicio.getText()), format.parse(tfDataFim.getText()), taDuplas.getText());
-	            
-            dispose();
-        } catch (ParseException e) {
-            JOptionPane.showMessageDialog(this, "Formato de data inválido (Utilize: dd/mm/aaaa)");
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, e.toString());
-        }
-    }
+			rdbtnAdicionarEm.setEnabled(false);
+	}	
 }
