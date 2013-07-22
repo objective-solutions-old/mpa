@@ -133,9 +133,23 @@ public class MesaRepository extends Repository<Mesa> {
 	}
 
 	public void delete(Mesa mesa) throws SQLException {
-		String sql = "DELETE FROM MESA WHERE ID = ?";
-		
 		PreparedStatement statement = null;
+		ResultSet rs = null;
+		int numeroMesa = 0;
+		String sql = "SELECT NUMERO FROM MESA WHERE ID = ?";
+		try {
+			statement = connection.prepareStatement(sql);
+			statement.setInt(1, mesa.getId());
+			rs = statement.executeQuery();
+			rs.next();
+			numeroMesa = rs.getInt("NUMERO");			
+		} finally {
+			statement.close();
+			rs.close();
+		}
+		
+		sql = "DELETE FROM MESA WHERE ID = ?";
+		
 		try{
 			statement = connection.prepareStatement(sql);
 			statement.setInt(1, mesa.getId());
@@ -152,7 +166,7 @@ public class MesaRepository extends Repository<Mesa> {
 		try{
 			statement = connection.prepareStatement(sql);
 			statement.setInt(1, mesa.getMpa().getId());
-			statement.setInt(2, mesa.getNumero());
+			statement.setInt(2, numeroMesa);
 			statement.executeUpdate();
 		} finally {
 			statement.close();

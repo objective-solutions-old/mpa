@@ -3,6 +3,8 @@ package mpa.manager.view;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.sql.SQLException;
@@ -24,8 +26,6 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 import mpa.manager.bean.Mesa;
 import mpa.manager.bean.MpaConfiguracao;
@@ -137,10 +137,19 @@ public class MpaManager extends JFrame {
 		
 		listMesas = new JList();
 		listMesas.setBounds(5, 44, 418, 307);
-		listMesas.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		listMesas.addListSelectionListener(new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent e) {
-				populaCamposEdicao();
+		listMesas.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		listMesas.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {	
+				if (e.getClickCount() == 1) {
+					limpaCamposMesa();
+					habilitaEdicaoDeMesas(false);
+					if (getSelectedMpa().isAtual())
+						btnMesaDelete.setEnabled(true);
+				}
+					
+				if (e.getClickCount() == 2)
+					populaCamposEdicao();
 			}
 		});
 		
@@ -198,15 +207,14 @@ public class MpaManager extends JFrame {
 		});
 		mesaPanel.add(btnMesaSave, "cell 0 2,growx,aligny top");
 		
-		btnMesaDelete = new JButton("Exclui Mesa");
-		btnMesaDelete.setToolTipText("Exclui uma mesa selecionada.");
+		btnMesaDelete = new JButton("Exclui Mesa(s)");
+		btnMesaDelete.setToolTipText("Exclui as mesas selecionadas.");
 		btnMesaDelete.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				int resposta = JOptionPane.showConfirmDialog(null, "Dejesa realmente apagar a mesa?", "", JOptionPane.YES_NO_OPTION);
-				if (resposta == 1) return;
+				if (JOptionPane.showConfirmDialog(null, "Dejesa realmente apagar a(s) mesa(s) selecionada(s)?", "", JOptionPane.YES_NO_OPTION) == 1) return;
 				
 				try {
-					excluiMesa();
+					excluiMesas();
 					preencheMesasComMpaSelecionado();
 				} catch (SQLException e1) {
 					e1.printStackTrace();
@@ -310,11 +318,8 @@ public class MpaManager extends JFrame {
 		listMesas.clearSelection();
 		mesaSelecionada = null;
 		limpaCamposMesa();
-		cbDev1.setEnabled(true);
-		cbDev2.setEnabled(true);
-		btnMesaSave.setEnabled(true);
+		habilitaEdicaoDeMesas(true);
 		btnMesaDelete.setEnabled(false);
-		textTeam.setEnabled(true);
 		
 		atribuiNumeroDaMesa();
 	}
@@ -348,8 +353,9 @@ public class MpaManager extends JFrame {
 				cbTeam.addItem(team);
 	}
 
-	private void excluiMesa() throws SQLException {
-		controller.excluiMesa((Mesa)listMesas.getSelectedValue());
+	private void excluiMesas() throws SQLException {
+		for (Object mesaSelecionada : listMesas.getSelectedValues())
+			controller.excluiMesa((Mesa) mesaSelecionada);
 	}
 
 	private MpaConfiguracao getSelectedMpa() {
