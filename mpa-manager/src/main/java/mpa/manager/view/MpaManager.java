@@ -141,15 +141,16 @@ public class MpaManager extends JFrame {
 		listMesas.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {	
+				populaCamposEdicao();
+				
 				if (e.getClickCount() == 1) {
-					limpaCamposMesa();
 					habilitaEdicaoDeMesas(false);
 					if (getSelectedMpa().isAtual())
 						btnMesaDelete.setEnabled(true);
 				}
 					
 				if (e.getClickCount() == 2)
-					populaCamposEdicao();
+					habilitaEdicaoDeMesas(true);
 			}
 		});
 		
@@ -215,6 +216,7 @@ public class MpaManager extends JFrame {
 				
 				try {
 					excluiMesas();
+					limpaCamposMesa();
 					preencheMesasComMpaSelecionado();
 				} catch (SQLException e1) {
 					e1.printStackTrace();
@@ -245,12 +247,17 @@ public class MpaManager extends JFrame {
 	}
 
 	private void populaCamposEdicao(){
-		mesaSelecionada = (Mesa) listMesas.getSelectedValue();
-		if (mesaSelecionada == null){
+		if (listMesas.getSelectedValues().length != 1) {			
 			limpaCamposMesa();
 			return;
 		}
-		habilitaEdicaoDeMesas(true);
+		
+		mesaSelecionada = (Mesa) listMesas.getSelectedValue();
+		//desconfio nao precisar desse bloco
+//		if (mesaSelecionada == null){
+//			limpaCamposMesa();
+//			return;
+//		}
 		numMesa.setText(String.valueOf(mesaSelecionada.getNumero()));
 		cbDev1.setSelectedItem(controller.objectivianoSelecionado(mesaSelecionada.getPrimeiroObjectiviano()));
 		cbDev2.setSelectedItem(controller.objectivianoSelecionado(mesaSelecionada.getSegundoObjectiviano()));
