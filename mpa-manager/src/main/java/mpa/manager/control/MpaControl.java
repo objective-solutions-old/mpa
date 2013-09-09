@@ -91,8 +91,11 @@ public class MpaControl {
     		equipes.put(mesa.getEquipe(), !"".equals(devs) ? devs + separator + mesa.getDevsString() : mesa.getDevsString());
     	}
 
-    	StringBuilder builder = new StringBuilder();
-    	for (String equipe : equipes.keySet()) {
+    	StringBuilder builder = new StringBuilder();    	
+    	List<String> keyList = new ArrayList<String>(equipes.keySet());
+    	sort(keyList);
+    	reverse(keyList);
+		for (String equipe : keyList) {
     		builder.append(equipe).append("\n".equals(separator) ? ":" + separator : separator).append(equipes.get(equipe)).append("\n");
     	}
     	
