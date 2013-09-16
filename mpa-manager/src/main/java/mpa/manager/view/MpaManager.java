@@ -10,7 +10,10 @@ import java.awt.event.WindowEvent;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -56,12 +59,14 @@ public class MpaManager extends JFrame {
 	private JButton btnMpaGenerate;
 	private JComboBox cbTeam;
 	private JLabel lblEquipe;
+	private JButton btnMesaSubir;
+	private JButton btnMesaDescer;
 
 	public MpaManager() {
 		controller = new MpaControl();
 		setTitle("Mpa Manager");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 350, 580);
+		setBounds(100, 100, 400, 580);
 		
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -145,12 +150,16 @@ public class MpaManager extends JFrame {
 				
 				if (e.getClickCount() == 1) {
 					habilitaEdicaoDeMesas(false);
+					habilitaMoverMesas(true);
+					
 					if (getSelectedMpa().isAtual())
 						btnMesaDelete.setEnabled(true);
 				}
 					
-				if (e.getClickCount() == 2)
+				if (e.getClickCount() == 2) {
 					habilitaEdicaoDeMesas(true);
+					habilitaMoverMesas(false);
+				}
 			}
 		});
 		
@@ -229,8 +238,34 @@ public class MpaManager extends JFrame {
 		mesaPanel.add(lblTime, "cell 0 0,alignx center,aligny center");
 		
 		textTeam = new JTextField();
-		mesaPanel.add(textTeam, "cell 0 0,alignx center,aligny center");
+		mesaPanel.add(textTeam, "cell 0 0,growx,aligny center");
 		textTeam.setColumns(10);
+		
+		btnMesaSubir = new JButton("Subir");
+		btnMesaSubir.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					subirMesas();
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					JOptionPane.showMessageDialog(null, ex.getMessage());
+				}
+			}
+		});
+		mesaPanel.add(btnMesaSubir, "cell 0 0,growx,aligny center");
+		
+		btnMesaDescer = new JButton("Descer");
+		btnMesaDescer.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					descerMesas();
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					JOptionPane.showMessageDialog(null, ex.getMessage());
+				}
+			}
+		});
+		mesaPanel.add(btnMesaDescer, "cell 0 0,growx,aligny center");
 		
 		try {
 			refreshMpas();
@@ -253,11 +288,7 @@ public class MpaManager extends JFrame {
 		}
 		
 		mesaSelecionada = (Mesa) listMesas.getSelectedValue();
-		//desconfio nao precisar desse bloco
-//		if (mesaSelecionada == null){
-//			limpaCamposMesa();
-//			return;
-//		}
+
 		numMesa.setText(String.valueOf(mesaSelecionada.getNumero()));
 		cbDev1.setSelectedItem(controller.objectivianoSelecionado(mesaSelecionada.getPrimeiroObjectiviano()));
 		cbDev2.setSelectedItem(controller.objectivianoSelecionado(mesaSelecionada.getSegundoObjectiviano()));
@@ -307,6 +338,7 @@ public class MpaManager extends JFrame {
 		btnMesaNew.setEnabled(!isPassado);
 		
 		habilitaEdicaoDeMesas(false);
+		habilitaMoverMesas(false);
 		
 		listMesas.setListData(controller.getMesas(getSelectedMpa()).toArray());
 		
@@ -321,11 +353,17 @@ public class MpaManager extends JFrame {
 		textTeam.setEnabled(b);
 	}
 	
+	private void habilitaMoverMesas(boolean b) {
+		btnMesaSubir.setEnabled(b);
+		btnMesaDescer.setEnabled(b);
+	}
+	
 	private void novaMesa() {
 		listMesas.clearSelection();
 		mesaSelecionada = null;
 		limpaCamposMesa();
 		habilitaEdicaoDeMesas(true);
+		habilitaMoverMesas(false);
 		btnMesaDelete.setEnabled(false);
 		
 		atribuiNumeroDaMesa();
@@ -349,7 +387,6 @@ public class MpaManager extends JFrame {
 		preencheMpas();
 		cbMpas.setSelectedItem(controller.getMpaAtual());
 		preencheMesasComMpaSelecionado();
-		habilitaEdicaoDeMesas(false);
 	}
 	
 	private void refreshTeams() throws SQLException {
@@ -395,4 +432,32 @@ public class MpaManager extends JFrame {
         
         mpaGerar.setVisible(true);
     }
+    
+    private void subirMesas() throws SQLException {
+		for (Object mesa : listMesas.getSelectedValues())
+			controller.sobeMesa((Mesa) mesa);
+		
+		reordenaMesas(-1);
+	}
+	
+	private void descerMesas() throws SQLException {
+		List<Object> mesas = Arrays.asList(listMesas.getSelectedValues());
+		Collections.reverse(mesas);
+		
+		for (Object mesa : mesas)
+			controller.desceMesa((Mesa) mesa);
+		
+		reordenaMesas(1);
+	}
+	
+	private void reordenaMesas(int direcao) throws SQLException {
+		int[] indices = listMesas.getSelectedIndices();
+		for (int i = 0; i < indices.length; i++)
+			indices[i] = indices[i] + direcao;
+		
+		preencheMesasComMpaSelecionado();
+		habilitaMoverMesas(true);
+		
+		listMesas.setSelectedIndices(indices);
+	}
 }

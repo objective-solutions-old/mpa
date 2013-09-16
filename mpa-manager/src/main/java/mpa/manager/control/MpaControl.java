@@ -230,6 +230,28 @@ public class MpaControl {
         MesaRepository mesaRepository = MesaRepository.getInstance();
         mesaRepository.delete(mesa);
     }
+    
+    public void sobeMesa(Mesa mesa) throws SQLException {
+    	validaMesaSubindo(mesa);
+    	MesaRepository.getInstance().move(mesa, -1);
+    }
+    
+    public void desceMesa(Mesa mesa) throws SQLException {
+    	validaMesaDescendo(mesa);
+    	MesaRepository.getInstance().move(mesa, 1);
+    }
+    
+    private void validaMesaSubindo(Mesa mesa) throws SQLException {
+    	List<Mesa> mesas = getMesas(mesa.getMpa());
+    	if (!mesas.isEmpty() && mesa.equals(mesas.get(0)))
+    		throw new RuntimeException("Não é possível subir a primeira mesa.");
+    }
+
+    private void validaMesaDescendo(Mesa mesa) throws SQLException {
+    	List<Mesa> mesas = getMesas(mesa.getMpa());
+    	if (!mesas.isEmpty() && mesa.equals(mesas.get(mesas.size() -1)))
+    		throw new RuntimeException("Não é possível descer a ultima mesa.");
+    }
 
     public void fechaConexao() {
         Connector.closeConnection();

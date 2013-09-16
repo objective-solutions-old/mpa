@@ -77,5 +77,8 @@ public class Mesa implements Comparable<Mesa> {
 		return getNumero() > o.getNumero() ? 1 : -1;
 	}
 
-
+	public boolean equals(Mesa obj) {
+		return getId() == obj.getId();
+	}
+	
 }

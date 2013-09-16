@@ -134,19 +134,9 @@ public class MesaRepository extends Repository<Mesa> {
 
 	public void delete(Mesa mesa) throws SQLException {
 		PreparedStatement statement = null;
-		ResultSet rs = null;
 		int numeroMesa = 0;
-		String sql = "SELECT NUMERO FROM MESA WHERE ID = ?";
-		try {
-			statement = connection.prepareStatement(sql);
-			statement.setInt(1, mesa.getId());
-			rs = statement.executeQuery();
-			rs.next();
-			numeroMesa = rs.getInt("NUMERO");			
-		} finally {
-			statement.close();
-			rs.close();
-		}
+		String sql;
+		numeroMesa = getNumero(mesa);
 		
 		sql = "DELETE FROM MESA WHERE ID = ?";
 		
@@ -171,6 +161,57 @@ public class MesaRepository extends Repository<Mesa> {
 		} finally {
 			statement.close();
 		}
+	}
+	
+	public void move(Mesa mesa, int direcao) throws SQLException {
+		PreparedStatement statement = null;
+		int numeroMesa = getNumero(mesa);
+		String sql;
+		
+		sql = "UPDATE MESA M " +
+				"SET M.NUMERO = ? " +
+				"WHERE M.ID_MPA_CONFIGURACAO = ? " +
+				"AND M.NUMERO = ?";
+		
+		try{
+			statement = connection.prepareStatement(sql);
+			statement.setInt(1, 9999);
+			statement.setInt(2, mesa.getMpa().getId());
+			statement.setInt(3, numeroMesa + direcao);
+			statement.executeUpdate();
+			
+			statement = connection.prepareStatement(sql);
+			statement.setInt(1, numeroMesa + direcao);
+			statement.setInt(2, mesa.getMpa().getId());
+			statement.setInt(3, numeroMesa);
+			statement.executeUpdate();
+			
+			statement = connection.prepareStatement(sql);
+			statement.setInt(1, numeroMesa);
+			statement.setInt(2, mesa.getMpa().getId());
+			statement.setInt(3, 9999);
+			statement.executeUpdate();
+		} finally {
+			statement.close();
+		}
+	}
+
+	private int getNumero(Mesa mesa) throws SQLException {
+		PreparedStatement statement = null;
+		ResultSet rs = null;
+		int numeroMesa;
+		String sql = "SELECT NUMERO FROM MESA WHERE ID = ?";
+		try {
+			statement = connection.prepareStatement(sql);
+			statement.setInt(1, mesa.getId());
+			rs = statement.executeQuery();
+			rs.next();
+			numeroMesa = rs.getInt("NUMERO");			
+		} finally {
+			statement.close();
+			rs.close();
+		}
+		return numeroMesa;
 	}
 
 	private String queryMesa(String where) {
