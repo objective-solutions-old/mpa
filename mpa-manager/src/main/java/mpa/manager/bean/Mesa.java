@@ -64,7 +64,7 @@ public class Mesa implements Comparable<Mesa> {
 
 	@Override
 	public String toString() {
-		return numero +	" - " + getDevsString();
+		return numero + " | " + equipe + " -- " + getDevsString();
 	}
 
 	public String getDevsString() {
@@ -80,5 +80,4 @@ public class Mesa implements Comparable<Mesa> {
 	public boolean equals(Mesa obj) {
 		return getId() == obj.getId();
 	}
-	
 }

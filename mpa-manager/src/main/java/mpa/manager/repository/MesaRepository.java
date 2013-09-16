@@ -179,12 +179,14 @@ public class MesaRepository extends Repository<Mesa> {
 			statement.setInt(2, mesa.getMpa().getId());
 			statement.setInt(3, numeroMesa + direcao);
 			statement.executeUpdate();
+			statement.close();
 			
 			statement = connection.prepareStatement(sql);
 			statement.setInt(1, numeroMesa + direcao);
 			statement.setInt(2, mesa.getMpa().getId());
 			statement.setInt(3, numeroMesa);
 			statement.executeUpdate();
+			statement.close();
 			
 			statement = connection.prepareStatement(sql);
 			statement.setInt(1, numeroMesa);
