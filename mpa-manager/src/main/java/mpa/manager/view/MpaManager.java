@@ -39,6 +39,7 @@ import net.miginfocom.swing.MigLayout;
 
 public class MpaManager extends JFrame {
 
+	private static final String TODAS_EQUIPES = "Todas as equipes";
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 	private JTextField numMesa; 
@@ -57,10 +58,11 @@ public class MpaManager extends JFrame {
 	private JLabel lblTime;
 	private JButton btnMpaGenerate;
 	private JComboBox cbTeamActions;
-	private JLabel lblEquipe;
 	private JButton btnMesaSubir;
 	private JButton btnMesaDescer;
 	private JComboBox cbTeam;
+	private JLabel lblAcoes;
+	private JLabel lblAcoes2;
 
 	public MpaManager() {
 		controller = new MpaControl();
@@ -77,11 +79,11 @@ public class MpaManager extends JFrame {
 		});
 		
 		
-		contentPane = new JPanel(new MigLayout("", "[grow]", "[][][grow][]"));
+		contentPane = new JPanel(new MigLayout("", "[grow]", "[][grow][]"));
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		
-		JPanel mpaPanel = new JPanel(new MigLayout("", "[grow]", "[]"));
+		JPanel mpaPanel = new JPanel(new MigLayout("", "[grow]", "[][][]"));
 		mpaPanel.setBorder(new TitledBorder(null, "Mpa", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		contentPane.add(mpaPanel, "cell 0 0,growx");
 		
@@ -99,22 +101,18 @@ public class MpaManager extends JFrame {
 		});
 		mpaPanel.add(cbMpas, "cell 0 0,growx,aligny center");
 		
-		JPanel operacoesPanel = new JPanel(new MigLayout("", "[grow]", "[]"));
-		operacoesPanel.setBorder(new TitledBorder(null, "Opera\u00E7\u00F5es", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		contentPane.add(operacoesPanel, "cell 0 1,growx");
-		
-		lblEquipe = new JLabel("Equipe:");
-		operacoesPanel.add(lblEquipe, "flowx,cell 0 0,aligny center");
+		lblAcoes = new JLabel("Ações:");
+		mpaPanel.add(lblAcoes, "cell 0 1,alignx left,aligny center");
 		
 		cbTeamActions = new JComboBox();
-		operacoesPanel.add(cbTeamActions, "cell 0 0,growx,aligny center");
+		mpaPanel.add(cbTeamActions, "flowx,cell 0 2,alignx center,aligny center");
 		
 		btnMpaClone = new JButton("Clonar");
-		operacoesPanel.add(btnMpaClone, "cell 0 0,growx,aligny center");
+		mpaPanel.add(btnMpaClone, "cell 0 2,growx,aligny center");
 		btnMpaClone.setToolTipText("Cria um novo mpa com as mesas atuais.");
 		
 		btnMpaGenerate = new JButton("Gerar");
-		operacoesPanel.add(btnMpaGenerate, "cell 0 0,growx,aligny center");
+		mpaPanel.add(btnMpaGenerate, "cell 0 2,growx,aligny center");
 		btnMpaGenerate.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
             	try {
@@ -137,9 +135,9 @@ public class MpaManager extends JFrame {
 			}
 		});
 		
-		JPanel mesasPanel = new JPanel(new MigLayout("", "[grow]", "[grow]"));
+		JPanel mesasPanel = new JPanel(new MigLayout("", "[grow]", "[grow][][]"));
 		mesasPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Mesas do Mpa", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
-		contentPane.add(mesasPanel, "cell 0 2,grow");
+		contentPane.add(mesasPanel, "cell 0 1,grow");
 		
 		listMesas = new JList();
 		listMesas.setBounds(5, 44, 418, 307);
@@ -167,9 +165,65 @@ public class MpaManager extends JFrame {
 		scrollMesas = new JScrollPane(listMesas, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		mesasPanel.add(scrollMesas, "cell 0 0,grow");
 		
-		JPanel mesaPanel = new JPanel(new MigLayout("", "[grow]", "[][][]"));
+		lblAcoes2 = new JLabel("Ações:");
+		mesasPanel.add(lblAcoes2, "cell 0 1");
+		
+		btnMesaSubir = new JButton("Subir");
+		mesasPanel.add(btnMesaSubir, "flowx,cell 0 2,growx,aligny center");
+		btnMesaSubir.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					subirMesas();
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					JOptionPane.showMessageDialog(null, ex.getMessage());
+				}
+			}
+		});
+		
+		btnMesaDescer = new JButton("Descer");
+		mesasPanel.add(btnMesaDescer, "cell 0 2,growx,aligny center");
+		btnMesaDescer.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					descerMesas();
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					JOptionPane.showMessageDialog(null, ex.getMessage());
+				}
+			}
+		});
+		
+		btnMesaDelete = new JButton("Excluir");
+		mesasPanel.add(btnMesaDelete, "cell 0 2,growx,aligny center");
+		btnMesaDelete.setToolTipText("Exclui as mesas selecionadas.");
+		btnMesaDelete.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (JOptionPane.showConfirmDialog(null, "Dejesa realmente apagar a(s) mesa(s) selecionada(s)?", "", JOptionPane.YES_NO_OPTION) == 1) return;
+				
+				try {
+					excluiMesas();
+					limpaCamposMesa();
+					preencheMesasComMpaSelecionado();
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
+		
+		btnMesaNew = new JButton("Nova Mesa");
+		mesasPanel.add(btnMesaNew, "cell 0 2,growx,aligny center");
+		btnMesaNew.setEnabled(false);
+		btnMesaNew.setToolTipText("Cria uma nova mesa no mpa selecionado.");
+		btnMesaNew.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				novaMesa();
+			}
+		});
+		
+		JPanel mesaPanel = new JPanel(new MigLayout("", "[grow]", "[][]"));
 		mesaPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Mesa", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
-		contentPane.add(mesaPanel, "cell 0 3,growx");
+		contentPane.add(mesaPanel, "cell 0 2,growx");
 		
 		lblNmero = new JLabel("Número:");
 		mesaPanel.add(lblNmero, "flowx,cell 0 0,alignx center,aligny center");
@@ -191,17 +245,14 @@ public class MpaManager extends JFrame {
 		cbDev2.setSelectedIndex(-1);
 		mesaPanel.add(cbDev2, "cell 0 1,growx,aligny center");
 		
-		btnMesaNew = new JButton("Nova Mesa");
-		btnMesaNew.setEnabled(false);
-		btnMesaNew.setToolTipText("Cria uma nova mesa no mpa selecionado.");
-		btnMesaNew.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				novaMesa();
-			}
-		});
-		mesaPanel.add(btnMesaNew, "cell 0 2,growx,aligny top");
+		lblTime = new JLabel("Equipe:");
+		mesaPanel.add(lblTime, "cell 0 0,alignx center,aligny center");
 		
-		btnMesaSave = new JButton("Salva Mesa");
+		cbTeam = new JComboBox();
+		cbTeam.setEditable(true);
+		mesaPanel.add(cbTeam, "cell 0 0,alignx center,aligny center");
+		
+		btnMesaSave = new JButton("Salvar");
 		btnMesaSave.setToolTipText("Atualiza uma mesa, salvando mesas novas ou alteradas.");
 		btnMesaSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -216,57 +267,7 @@ public class MpaManager extends JFrame {
 				}
 			}
 		});
-		mesaPanel.add(btnMesaSave, "cell 0 2,growx,aligny top");
-		
-		btnMesaDelete = new JButton("Exclui Mesa(s)");
-		btnMesaDelete.setToolTipText("Exclui as mesas selecionadas.");
-		btnMesaDelete.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (JOptionPane.showConfirmDialog(null, "Dejesa realmente apagar a(s) mesa(s) selecionada(s)?", "", JOptionPane.YES_NO_OPTION) == 1) return;
-				
-				try {
-					excluiMesas();
-					limpaCamposMesa();
-					preencheMesasComMpaSelecionado();
-				} catch (SQLException e1) {
-					e1.printStackTrace();
-				}
-			}
-		});
-		mesaPanel.add(btnMesaDelete, "cell 0 2,growx,aligny top");
-		
-		lblTime = new JLabel("Equipe:");
-		mesaPanel.add(lblTime, "cell 0 0,alignx center,aligny center");
-		
-		cbTeam = new JComboBox();
-		cbTeam.setEditable(true);
-		mesaPanel.add(cbTeam, "cell 0 0,alignx center,aligny center");
-		
-		btnMesaSubir = new JButton("Subir");
-		btnMesaSubir.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				try {
-					subirMesas();
-				} catch (Exception ex) {
-					ex.printStackTrace();
-					JOptionPane.showMessageDialog(null, ex.getMessage());
-				}
-			}
-		});
-		mesaPanel.add(btnMesaSubir, "cell 0 0,growx,aligny center");
-		
-		btnMesaDescer = new JButton("Descer");
-		btnMesaDescer.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				try {
-					descerMesas();
-				} catch (Exception ex) {
-					ex.printStackTrace();
-					JOptionPane.showMessageDialog(null, ex.getMessage());
-				}
-			}
-		});
-		mesaPanel.add(btnMesaDescer, "cell 0 0,growx,aligny center");
+		mesaPanel.add(btnMesaSave, "cell 0 0,alignx center,aligny center");
 		
 		try {
 			refreshMpas();
@@ -348,6 +349,7 @@ public class MpaManager extends JFrame {
 	}
 
 	private void habilitaEdicaoDeMesas(boolean b) {
+		numMesa.setEnabled(b);
 		cbDev1.setEnabled(b);
 		cbDev2.setEnabled(b);
 		btnMesaSave.setEnabled(b);
@@ -395,7 +397,7 @@ public class MpaManager extends JFrame {
 		cbTeamActions.removeAllItems();
 		cbTeam.removeAllItems();
 		
-		cbTeamActions.addItem("Todas");
+		cbTeamActions.addItem(TODAS_EQUIPES);
 		cbTeam.addItem(null);
 		
 		for (String team : controller.getTeams(getSelectedMpa()))
@@ -415,7 +417,7 @@ public class MpaManager extends JFrame {
 	}
 
 	private String getSelectedTeam() {
-		return "Todas".equals((String) cbTeamActions.getSelectedItem()) ? null : (String) cbTeamActions.getSelectedItem();
+		return TODAS_EQUIPES.equals((String) cbTeamActions.getSelectedItem()) ? null : (String) cbTeamActions.getSelectedItem();
 	}
 	
     private void gerarNovoMpa() throws SQLException {
