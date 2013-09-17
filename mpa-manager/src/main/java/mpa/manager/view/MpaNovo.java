@@ -8,7 +8,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -18,6 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.text.MaskFormatter;
 
@@ -29,6 +29,7 @@ public class MpaNovo extends JFrame {
 
     private static final long serialVersionUID = 2L;
     private JPanel contentPane;
+	private JScrollPane scrollDuplas;
     private JTextArea taDuplas;
     private JFormattedTextField tfDataInicio;
     private JFormattedTextField tfDataFim;
@@ -80,8 +81,10 @@ public class MpaNovo extends JFrame {
         
         taDuplas = new JTextArea();
         taDuplas.setText(devs);
-        taDuplas.setBorder(BorderFactory.createEtchedBorder());
-        contentPane.add(taDuplas, "cell 0 2,grow");
+        taDuplas.setBorder(null);
+        
+        scrollDuplas = new JScrollPane(taDuplas, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        contentPane.add(scrollDuplas, "cell 0 2,grow");
         
         btnSalvar = new JButton("Salvar");
         btnSalvar.addActionListener(new MpaSave());

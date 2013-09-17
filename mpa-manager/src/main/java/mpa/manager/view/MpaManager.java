@@ -53,20 +53,20 @@ public class MpaManager extends JFrame {
 	private JButton btnMesaDelete;
 	private JScrollPane scrollMesas;
 	private JButton btnMesaNew;
-	private JTextField textTeam;
 	private JLabel lblNmero;
 	private JLabel lblTime;
 	private JButton btnMpaGenerate;
-	private JComboBox cbTeam;
+	private JComboBox cbTeamActions;
 	private JLabel lblEquipe;
 	private JButton btnMesaSubir;
 	private JButton btnMesaDescer;
+	private JComboBox cbTeam;
 
 	public MpaManager() {
 		controller = new MpaControl();
 		setTitle("Mpa Manager");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 400, 580);
+		setBounds(100, 100, 420, 580);
 		
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -105,8 +105,8 @@ public class MpaManager extends JFrame {
 		lblEquipe = new JLabel("Equipe:");
 		operacoesPanel.add(lblEquipe, "flowx,cell 0 0,aligny center");
 		
-		cbTeam = new JComboBox();
-		operacoesPanel.add(cbTeam, "cell 0 0,growx,aligny center");
+		cbTeamActions = new JComboBox();
+		operacoesPanel.add(cbTeamActions, "cell 0 0,growx,aligny center");
 		
 		btnMpaClone = new JButton("Clonar");
 		operacoesPanel.add(btnMpaClone, "cell 0 0,growx,aligny center");
@@ -237,9 +237,9 @@ public class MpaManager extends JFrame {
 		lblTime = new JLabel("Equipe:");
 		mesaPanel.add(lblTime, "cell 0 0,alignx center,aligny center");
 		
-		textTeam = new JTextField();
-		mesaPanel.add(textTeam, "cell 0 0,growx,aligny center");
-		textTeam.setColumns(10);
+		cbTeam = new JComboBox();
+		cbTeam.setEditable(true);
+		mesaPanel.add(cbTeam, "cell 0 0,alignx center,aligny center");
 		
 		btnMesaSubir = new JButton("Subir");
 		btnMesaSubir.addActionListener(new ActionListener() {
@@ -292,21 +292,21 @@ public class MpaManager extends JFrame {
 		numMesa.setText(String.valueOf(mesaSelecionada.getNumero()));
 		cbDev1.setSelectedItem(controller.objectivianoSelecionado(mesaSelecionada.getPrimeiroObjectiviano()));
 		cbDev2.setSelectedItem(controller.objectivianoSelecionado(mesaSelecionada.getSegundoObjectiviano()));
-		textTeam.setText(mesaSelecionada.getEquipe());
+		cbTeam.setSelectedItem(mesaSelecionada.getEquipe());
 	}
 	
 	private void limpaCamposMesa() {
 		numMesa.setText("");
 		cbDev1.setSelectedItem(null);
 		cbDev2.setSelectedItem(null);
-		textTeam.setText("");
+		cbTeam.setSelectedItem(null);
 	}
 
 	private void updateMesaSelecionada() throws SQLException{
 		if (mesaSelecionada == null) return;
 		mesaSelecionada.setPrimeiroObjectiviano((Objectiviano)cbDev1.getSelectedItem());
 		mesaSelecionada.setSegundoObjectiviano((Objectiviano)cbDev2.getSelectedItem());
-		mesaSelecionada.setEquipe(textTeam.getText());
+		mesaSelecionada.setEquipe((String)cbTeam.getSelectedItem());
 		controller.updateMesa(mesaSelecionada);
 		listMesas.setSelectedValue(mesaSelecionada, false);
 	}
@@ -350,7 +350,7 @@ public class MpaManager extends JFrame {
 		cbDev2.setEnabled(b);
 		btnMesaSave.setEnabled(b);
 		btnMesaDelete.setEnabled(b);
-		textTeam.setEnabled(b);
+		cbTeam.setEnabled(b);
 	}
 	
 	private void habilitaMoverMesas(boolean b) {
@@ -379,7 +379,7 @@ public class MpaManager extends JFrame {
 				Integer.parseInt(numMesa.getText()),
 				(Objectiviano)cbDev1.getSelectedItem(),
 				(Objectiviano)cbDev2.getSelectedItem(),
-				textTeam.getText());
+				(String)cbTeam.getSelectedItem());
 		preencheMesasComMpaSelecionado();
 	}
 
@@ -390,11 +390,17 @@ public class MpaManager extends JFrame {
 	}
 	
 	private void refreshTeams() throws SQLException {
+		cbTeamActions.removeAllItems();
 		cbTeam.removeAllItems();
-		cbTeam.addItem("Todas");
+		
+		cbTeamActions.addItem("Todas");
+		cbTeam.addItem(null);
+		
 		for (String team : controller.getTeams(getSelectedMpa()))
-			if (team != null)
+			if (team != null) {
+				cbTeamActions.addItem(team);
 				cbTeam.addItem(team);
+			}
 	}
 
 	private void excluiMesas() throws SQLException {
@@ -407,7 +413,7 @@ public class MpaManager extends JFrame {
 	}
 
 	private String getSelectedTeam() {
-		return "Todas".equals((String) cbTeam.getSelectedItem()) ? null : (String) cbTeam.getSelectedItem();
+		return "Todas".equals((String) cbTeamActions.getSelectedItem()) ? null : (String) cbTeamActions.getSelectedItem();
 	}
 	
     private void gerarNovoMpa() throws SQLException {
