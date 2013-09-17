@@ -43,14 +43,13 @@ public class MpaNovo extends JFrame {
     private JRadioButton rdbtnAdicionarEm;
     
     public MpaNovo(Date data, String devs) throws ParseException {
-        super();
         controller = new MpaControl();
 
         setTitle("Novo Mpa");
-
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        
         contentPane = new JPanel(new MigLayout("", "[grow]", "[][][grow][]"));
-        setBounds(100, 100, 350, 500);
+        setBounds(100, 100, 420, 580);
         setContentPane(contentPane);
                 
         rdbtnNovoMpa = new JRadioButton("Novo Mpa");
@@ -114,7 +113,9 @@ public class MpaNovo extends JFrame {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			enablementItens(false);
+			LoadingBar loadingBar = new LoadingBar("SALVANDO");
 	    	try {
+	    		loadingBar.setVisible(true);
 	        	if (rdbtnNovoMpa.isSelected())
 	        		controller.criaMpaComMesas(format.parse(tfDataInicio.getText()), format.parse(tfDataFim.getText()), taDuplas.getText());
 	        	else
@@ -127,6 +128,7 @@ public class MpaNovo extends JFrame {
 	            e1.printStackTrace();
 	            JOptionPane.showMessageDialog(MpaNovo.this, e1.toString());
 	        } finally {
+	        	loadingBar.dispose();
 	        	enablementItens(true);
 	        	new RefreshRadio().actionPerformed(null);
 	        }

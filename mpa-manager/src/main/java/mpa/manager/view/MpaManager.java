@@ -67,6 +67,7 @@ public class MpaManager extends JFrame {
 		setTitle("Mpa Manager");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 420, 580);
+		setLocationRelativeTo(null);
 		
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -324,6 +325,7 @@ public class MpaManager extends JFrame {
 				}
 			}
 		});
+		mpaNovo.setLocationRelativeTo(null);
 		mpaNovo.setVisible(true);	
 	}
 	
@@ -424,15 +426,21 @@ public class MpaManager extends JFrame {
 			public void windowClosed(WindowEvent e) {
 				if (mpaGerar.getParams() != null)
 					new Thread() {
-					public void run() {
-						try {
-							abreTelaMpaNovo(controller.gerarNovoMpa(mpaGerar.getParams()));
-						} catch (Exception ex) {
-							JOptionPane.showMessageDialog(MpaManager.this, ex.toString());
-							ex.printStackTrace();
-						}						
-					};
-				}.start();
+						public void run() {
+							LoadingBar loadingBar = new LoadingBar("GERANDO");
+							
+							try {
+								loadingBar.setVisible(true);
+								String mesasGeradas = controller.gerarNovoMpa(mpaGerar.getParams());
+								abreTelaMpaNovo(mesasGeradas);
+							} catch (Exception ex) {
+								JOptionPane.showMessageDialog(MpaManager.this, ex.toString());
+								ex.printStackTrace();
+							} finally {
+								loadingBar.dispose();	
+							}							
+						};
+					}.start();
 			}
 		});
         

@@ -26,7 +26,9 @@ public class MpaGerar extends JFrame {
 	public MpaGerar(String teams) {
 		setTitle("Parâmetros para gerar MPA");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 700, 450);
+		setBounds(100, 100, 700, 580);
+		setLocationRelativeTo(null);
+		
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
